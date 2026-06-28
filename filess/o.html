@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>o</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+<style>
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  :root {
+    --bg: #081120;
+    --bg-soft: #0f1c33;
+    --card: rgba(255, 255, 255, 0.08);
+    --card-strong: rgba(255, 255, 255, 0.14);
+    --text: #eff6ff;
+    --muted: #b8c7e0;
+    --primary: #5eead4;
+    --secondary: #60a5fa;
+    --accent: #fbbf24;
+    --danger: #fb7185;
+    --success: #22c55e;
+    --border: rgba(255, 255, 255, 0.16);
+    --shadow: 0 20px 60px rgba(0, 0, 0, 0.28);
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(180deg, #06101d 0%, #0c1830 36%, #07111f 100%);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  button,
+  input,
+  select {
+    font: inherit;
+  }
+
+  .container {
+    width: min(1180px, calc(100% - 2rem));
+    margin: 0 auto;
+  }
+
+  .hero {
+    padding-bottom: 4rem;
+    background:
+      radial-gradient(circle at top left, rgba(94, 234, 212, 0.18), transparent 34%),
+      radial-gradient(circle at top right, rgba(96, 165, 250, 0.16), transparent 30%),
+      linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0));
+  }
+
+  .navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1.2rem 0;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+  }
+
+  .brand-logo {
+    width: 52px;
+    height: 52px;
+    display: grid;
+    place-items: center;
+    border-radius: 16px;
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: #062033;
+    font-size: 1.5rem;
+    font-weight: 800;
+    box-shadow: var(--shadow);
+  }
+
+  .brand h1 {
+    font-size: 1.15rem;
+    line-height: 1.1;
+  }
+
+  .brand p,
+  .nav-links a,
+  .section-heading p,
+  .hero-copy p,
+  .summary-note,
+  .ticket-top p,
+  .footer p {
+    color: var(--muted);
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 1.2rem;
+    font-size: 0.96rem;
+  }
+
+  .nav-links a:hover {
+    color: var(--primary);
+  }
+
+  .hero-content {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 2rem;
+    align-items: center;
+    padding-top: 2.5rem;
+  }
+
+  .hero-copy h2 {
+    font-size: clamp(2.4rem, 4vw, 4.5rem);
+    line-height: 1.08;
+    margin: 1rem 0;
+    max-width: 11ch;
+  }
+
+  .hero-copy p {
+    max-width: 60ch;
+    font-size: 1.03rem;
+    line-height: 1.8;
+  }
+
+  .tag,
+  .section-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.55rem 0.95rem;
+    border-radius: 999px;
+    border: 1px solid rgba(94, 234, 212, 0.25);
+    background: rgba(94, 234, 212, 0.08);
+    color: var(--primary);
+    font-size: 0.86rem;
+    font-weight: 600;
+  }
+
+  .hero-actions,
+  .form-actions,
+  .ticket-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1.7rem;
+  }
+
+  .btn {
+    border: none;
+    border-radius: 16px;
+    padding: 0.95rem 1.35rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.25s ease, box-shadow 0.25s ease, background 0.25s ease;
+  }
+
+  .btn:hover {
+    transform: translateY(-2px);
+  }
+
+  .btn-primary {
+    background: linear-gradient(135deg, var(--primary), var(--secondary));
+    color: #03121d;
+    box-shadow: 0 18px 35px rgba(94, 234, 212, 0.22);
+  }
+
+  .btn-secondary {
+    background: rgba(255, 255, 255, 0.07);
+    border: 1px solid var(--border);
+    color: var(--text);
+  }
+
+  .stats {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+    margin-top: 2rem;
+  }
+
+  .stats div {
+    display: grid;
+    gap: 0.35rem;
+  }
+
+  .stats strong {
+    font-size: 1.4rem;
+  }
+
+  .stats span {
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  .glass {
+    background: var(--card);
+    border: 1px solid var(--border);
+    backdrop-filter: blur(18px);
+    box-shadow: var(--shadow);
+  }
+
+  .hero-card,
+  .plan-box,
+  .booking-form,
+  .summary-card,
+  .ticket-card {
+    border-radius: 28px;
+  }
+
+  .hero-card {
+    padding: 1.5rem;
+  }
+
+  .hero-card h3,
+  .box-head h4,
+  .summary-head h4,
+  .ticket-top h3,
+  .section-heading h3,
+  .footer h4 {
+    font-size: 1.4rem;
+  }
+
+  .mini-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+
+  .mini-card {
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    display: grid;
+    gap: 0.4rem;
+  }
+
+  .mini-card span,
+  .option-line small,
+  .summary-list span,
+  .ticket-item span,
+  .box-head span {
+    color: var(--muted);
+  }
+
+  .mini-card strong,
+  .option-line strong,
+  .summary-list strong,
+  .ticket-item strong {
+    font-weight: 600;
+  }
+
+  .mini-card.highlight {
+    background: linear-gradient(135deg, rgba(94, 234, 212, 0.15), rgba(96, 165, 250, 0.12));
+  }
+
+  .section {
+    padding: 4.5rem 0;
+  }
+
+  .section-soft {
+    background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0));
+  }
+
+  .section-heading {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 1rem;
+    margin-bottom: 1.8rem;
+  }
+
+  .destination-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.2rem;
+  }
+
+  .destination-card {
+    position: relative;
+    min-height: 250px;
+    overflow: hidden;
+    border-radius: 24px;
+    padding: 1.25rem;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    cursor: pointer;
+    transition: transform 0.25s ease, border-color 0.25s ease;
+    background-size: cover;
+    background-position: center;
+  }
+
+  .destination-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(5, 10, 20, 0.08), rgba(5, 10, 20, 0.88));
+  }
+
+  .destination-card:hover,
+  .destination-card.active {
+    transform: translateY(-6px);
+    border-color: rgba(94, 234, 212, 0.65);
+  }
+
+  .destination-card .card-content {
+    position: absolute;
+    inset: auto 1.25rem 1.25rem 1.25rem;
+    z-index: 1;
+  }
+
+  .destination-card h4 {
+    font-size: 1.35rem;
+    margin-bottom: 0.35rem;
+  }
+
+  .destination-card p {
+    color: #d9e6fb;
+    font-size: 0.92rem;
+  }
+
+  .plans-layout,
+  .booking-layout {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.2rem;
+  }
+
+  .booking-layout {
+    grid-template-columns: 1.2fr 0.8fr;
+  }
+
+  .plan-box,
+  .booking-form,
+  .summary-card,
+  .ticket-card {
+    padding: 1.4rem;
+  }
+
+  .box-head,
+  .summary-head,
+  .ticket-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: start;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .option-list {
+    display: grid;
+    gap: 0.9rem;
+  }
+
+  .option-line {
+    padding: 0.95rem 1rem;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .option-line div {
+    display: grid;
+    gap: 0.2rem;
+  }
+
+  .price-pill,
+  .success-badge,
+  #bookingBadge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.5rem 0.85rem;
+    border-radius: 999px;
+    font-size: 0.82rem;
+    font-weight: 700;
+  }
+
+  .price-pill {
+    background: rgba(251, 191, 36, 0.14);
+    color: #fcd34d;
+  }
+
+  .success-badge,
+  #bookingBadge.ready {
+    background: rgba(34, 197, 94, 0.16);
+    color: #86efac;
+  }
+
+  #bookingBadge.pending {
+    background: rgba(251, 191, 36, 0.16);
+    color: #fde68a;
+  }
+
+  .form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+  }
+
+  label {
+    display: grid;
+    gap: 0.45rem;
+  }
+
+  label span {
+    font-size: 0.92rem;
+    color: var(--muted);
+  }
+
+  input,
+  select {
+    width: 100%;
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text);
+    border: 1px solid rgba(255, 255, 255, 0.09);
+    border-radius: 16px;
+    padding: 0.95rem 1rem;
+    outline: none;
+  }
+
+  input:focus,
+  select:focus {
+    border-color: rgba(94, 234, 212, 0.7);
+    box-shadow: 0 0 0 4px rgba(94, 234, 212, 0.08);
+  }
+
+  select option {
+    color: #111827;
+  }
+
+  .summary-list,
+  .ticket-grid {
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  .summary-list div,
+  .ticket-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.9rem 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .total-box {
+    margin-top: 1rem;
+    padding: 1rem 1.1rem;
+    border-radius: 20px;
+    background: linear-gradient(135deg, rgba(94, 234, 212, 0.18), rgba(96, 165, 250, 0.12));
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .total-box strong {
+    font-size: 1.5rem;
+  }
+
+  .summary-note {
+    margin-top: 1rem;
+    line-height: 1.7;
+    font-size: 0.92rem;
+  }
+
+  .result-section {
+    padding-top: 0;
+  }
+
+  .ticket-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .ticket-item {
+    flex-direction: column;
+    align-items: start;
+  }
+
+  .hidden {
+    display: none;
+  }
+
+  .footer {
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    padding: 1.5rem 0 2.5rem;
+  }
+
+  .footer-wrap {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  @media (max-width: 980px) {
+
+    .hero-content,
+    .plans-layout,
+    .booking-layout,
+    .destination-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .destination-grid {
+      gap: 1rem;
+    }
+
+    .section-heading,
+    .navbar {
+      flex-direction: column;
+      align-items: start;
+    }
+
+    .nav-links {
+      flex-wrap: wrap;
+    }
+  }
+
+  @media (max-width: 720px) {
+
+    .form-grid,
+    .mini-grid,
+    .ticket-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .hero-copy h2 {
+      max-width: none;
+    }
+
+    .stats {
+      gap: 1rem;
+    }
+
+    .destination-card {
+      min-height: 220px;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .container {
+      width: min(100% - 1.2rem, 1180px);
+    }
+
+    .btn {
+      width: 100%;
+    }
+
+    .hero-card,
+    .plan-box,
+    .booking-form,
+    .summary-card,
+    .ticket-card {
+      padding: 1rem;
+      border-radius: 22px;
+    }
+  }
+</style>
+
+<body>
+  <header class="hero">
+    <nav class="navbar container">
+      <div class="brand">
+        <div class="brand-logo">✈</div>
+        <div>
+          <h1>GlobeTrek</h1>
+          <p>Tours & Travels</p>
+        </div>
+      </div>
+      <div class="nav-links">
+        <a href="#destinations">Destinations</a>
+        <a href="#plans">Plans</a>
+        <a href="#booking">Booking</a>
+      </div>
+    </nav>
+
+    <div class="hero-content container">
+      <div class="hero-copy">
+        <span class="tag">All-in-one travel booking</span>
+        <h2>Book hotel, food, and tour packages for your dream destination.</h2>
+        <p>
+          A modern travel website built with pure HTML, CSS, and JavaScript. Choose your location,
+          customize your stay, and generate a downloadable PDF ticket instantly after booking.
+        </p>
+        <div class="hero-actions">
+          <a class="btn btn-primary" href="#booking">Start Booking</a>
+          <a class="btn btn-secondary" href="#destinations">Explore Destinations</a>
+        </div>
+        <div class="stats">
+          <div><strong>6+</strong><span>Popular locations</span></div>
+          <div><strong>18+</strong><span>Hotel options</span></div>
+          <div><strong>Instant</strong><span>PDF ticket</span></div>
+        </div>
+      </div>
+      <div class="hero-card glass">
+        <h3>Quick Booking Preview</h3>
+        <div class="mini-card">
+          <span>Destination</span>
+          <strong id="previewDestination">Bali, Indonesia</strong>
+        </div>
+        <div class="mini-grid">
+          <div class="mini-card">
+            <span>Hotel</span>
+            <strong id="previewHotel">Sea Breeze Resort</strong>
+          </div>
+          <div class="mini-card">
+            <span>Food</span>
+            <strong id="previewFood">Premium Meal Plan</strong>
+          </div>
+          <div class="mini-card">
+            <span>Package</span>
+            <strong id="previewPackage">Adventure Escape</strong>
+          </div>
+          <div class="mini-card highlight">
+            <span>Starting From</span>
+            <strong id="previewPrice">$790</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <section class="section container" id="destinations">
+      <div class="section-heading">
+        <div>
+          <span class="section-tag">Featured Destinations</span>
+          <h3>Find your next getaway</h3>
+        </div>
+        <p>Select a destination below to automatically update hotels, food plans, and package choices.</p>
+      </div>
+      <div id="destinationGrid" class="destination-grid"></div>
+    </section>
+
+    <section class="section section-soft" id="plans">
+      <div class="container">
+        <div class="section-heading">
+          <div>
+            <span class="section-tag">What’s Included</span>
+            <h3>Travel plans tailored to your trip</h3>
+          </div>
+          <p>Every destination includes curated hotel stays, meal plans, and local tour experiences.</p>
+        </div>
+
+        <div class="plans-layout">
+          <div class="plan-box glass">
+            <div class="box-head">
+              <h4>Hotels</h4>
+              <span id="hotelCount">0 options</span>
+            </div>
+            <div id="hotelList" class="option-list"></div>
+          </div>
+          <div class="plan-box glass">
+            <div class="box-head">
+              <h4>Food Plans</h4>
+              <span id="foodCount">0 options</span>
+            </div>
+            <div id="foodList" class="option-list"></div>
+          </div>
+          <div class="plan-box glass">
+            <div class="box-head">
+              <h4>Tour Packages</h4>
+              <span id="packageCount">0 options</span>
+            </div>
+            <div id="packageList" class="option-list"></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section container" id="booking">
+      <div class="section-heading">
+        <div>
+          <span class="section-tag">Booking Form</span>
+          <h3>Complete your travel reservation</h3>
+        </div>
+        <p>Fill in your details, confirm the total price, and download your travel ticket as a PDF.</p>
+      </div>
+
+      <div class="booking-layout">
+        <form id="bookingForm" class="booking-form glass">
+          <div class="form-grid">
+            <label>
+              <span>Full Name</span>
+              <input type="text" id="fullName" placeholder="Enter your full name" required />
+            </label>
+            <label>
+              <span>Email Address</span>
+              <input type="email" id="email" placeholder="Enter your email" required />
+            </label>
+            <label>
+              <span>Phone Number</span>
+              <input type="tel" id="phone" placeholder="Enter your phone number" required />
+            </label>
+            <label>
+              <span>Destination</span>
+              <select id="destinationSelect" required></select>
+            </label>
+            <label>
+              <span>Check-in Date</span>
+              <input type="date" id="checkIn" required />
+            </label>
+            <label>
+              <span>Check-out Date</span>
+              <input type="date" id="checkOut" required />
+            </label>
+            <label>
+              <span>Guests</span>
+              <input type="number" id="guests" min="1" max="10" value="2" required />
+            </label>
+            <label>
+              <span>Hotel</span>
+              <select id="hotelSelect" required></select>
+            </label>
+            <label>
+              <span>Food Plan</span>
+              <select id="foodSelect" required></select>
+            </label>
+            <label>
+              <span>Tour Package</span>
+              <select id="packageSelect" required></select>
+            </label>
+          </div>
+
+          <div class="form-actions">
+            <button type="submit" class="btn btn-primary">Confirm Booking</button>
+            <button type="button" id="resetBtn" class="btn btn-secondary">Reset</button>
+          </div>
+        </form>
+
+        <aside class="summary-card glass">
+          <div class="summary-head">
+            <h4>Booking Summary</h4>
+            <span id="bookingBadge">Ready to book</span>
+          </div>
+          <div class="summary-list">
+            <div><span>Destination</span><strong id="sumDestination">Bali, Indonesia</strong></div>
+            <div><span>Hotel</span><strong id="sumHotel">Sea Breeze Resort</strong></div>
+            <div><span>Food</span><strong id="sumFood">Premium Meal Plan</strong></div>
+            <div><span>Package</span><strong id="sumPackage">Adventure Escape</strong></div>
+            <div><span>Guests</span><strong id="sumGuests">2</strong></div>
+            <div><span>Travel Days</span><strong id="sumDays">3</strong></div>
+          </div>
+          <div class="total-box">
+            <span>Total Amount</span>
+            <strong id="sumTotal">$790</strong>
+          </div>
+          <p class="summary-note">Price updates automatically based on selected destination, stay duration, guests,
+            hotel, food plan, and package.</p>
+        </aside>
+      </div>
+    </section>
+
+    <section class="section result-section hidden" id="resultSection">
+      <div class="container">
+        <div class="ticket-card glass" id="ticketCard">
+          <div class="ticket-top">
+            <div>
+              <span class="section-tag">Booking Successful</span>
+              <h3>Your travel ticket is ready</h3>
+              <p>Download the PDF ticket or use the details below as your booking confirmation.</p>
+            </div>
+            <div class="success-badge">Confirmed ✓</div>
+          </div>
+          <div class="ticket-grid" id="ticketDetails"></div>
+          <div class="ticket-actions">
+            <button id="downloadPdfBtn" class="btn btn-primary">Download Ticket PDF</button>
+            <button id="bookAnotherBtn" class="btn btn-secondary">Book Another Trip</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container footer-wrap">
+      <div>
+        <h4>GlobeTrek Tours & Travels</h4>
+        <p>Responsive travel booking website demo using HTML, CSS, and JavaScript.</p>
+      </div>
+      <p>Built for hotel booking, food plan selection, tour package booking, and PDF ticket generation.</p>
+    </div>
+  </footer>
+
+  <script>
+    const travelData = {
+      bali: {
+        name: 'Bali, Indonesia',
+        basePrice: 790,
+        description: 'Beaches, temples, island adventures, and tropical luxury.',
+        image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=1200&q=80',
+        hotels: [
+          { name: 'Sea Breeze Resort', price: 220 },
+          { name: 'Sunset Cliff Hotel', price: 280 },
+          { name: 'Lotus Garden Villa', price: 340 }
+        ],
+        foods: [
+          { name: 'Standard Meal Plan', price: 40 },
+          { name: 'Premium Meal Plan', price: 70 },
+          { name: 'Luxury Dining Plan', price: 110 }
+        ],
+        packages: [
+          { name: 'Adventure Escape', price: 170 },
+          { name: 'Temple & Culture Tour', price: 130 },
+          { name: 'Romantic Island Retreat', price: 210 }
+        ]
+      },
+      dubai: {
+        name: 'Dubai, UAE',
+        basePrice: 980,
+        description: 'Luxury skylines, desert safari, premium shopping, and iconic attractions.',
+        image: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=1200&q=80',
+        hotels: [
+          { name: 'Skyline Grand Hotel', price: 320 },
+          { name: 'Palm Crown Resort', price: 390 },
+          { name: 'Golden Oasis Suites', price: 450 }
+        ],
+        foods: [
+          { name: 'International Buffet', price: 60 },
+          { name: 'Premium Gourmet Plan', price: 95 },
+          { name: 'Royal Dining Experience', price: 140 }
+        ],
+        packages: [
+          { name: 'Desert Safari Deluxe', price: 220 },
+          { name: 'Luxury City Explorer', price: 190 },
+          { name: 'Family Fun Pass', price: 240 }
+        ]
+      },
+      goa: {
+        name: 'Goa, India',
+        basePrice: 540,
+        description: 'Beach vibes, nightlife, coastal food, and relaxing resort stays.',
+        image: 'https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?auto=format&fit=crop&w=1200&q=80',
+        hotels: [
+          { name: 'Ocean Pearl Stay', price: 140 },
+          { name: 'Palm Bay Retreat', price: 190 },
+          { name: 'Heritage Coast Resort', price: 240 }
+        ],
+        foods: [
+          { name: 'Goan Taste Plan', price: 30 },
+          { name: 'Seafood Special Plan', price: 55 },
+          { name: 'Chef Signature Dining', price: 85 }
+        ],
+        packages: [
+          { name: 'Beach & Cruise Combo', price: 120 },
+          { name: 'Nightlife Explorer', price: 110 },
+          { name: 'Relax & Rejuvenate', price: 150 }
+        ]
+      },
+      paris: {
+        name: 'Paris, France',
+        basePrice: 1150,
+        description: 'Romantic streets, art museums, famous landmarks, and elegant cuisine.',
+        image: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?auto=format&fit=crop&w=1200&q=80',
+        hotels: [
+          { name: 'Eiffel View Residency', price: 350 },
+          { name: 'Champs Luxury Inn', price: 430 },
+          { name: 'Seine Palace Hotel', price: 510 }
+        ],
+        foods: [
+          { name: 'Classic Bistro Plan', price: 75 },
+          { name: 'Paris Gourmet Plan', price: 110 },
+          { name: 'Fine Dining Collection', price: 165 }
+        ],
+        packages: [
+          { name: 'City of Lights Tour', price: 220 },
+          { name: 'Museum & Landmark Pass', price: 260 },
+          { name: 'Romantic Couple Escape', price: 320 }
+        ]
+      },
+      tokyo: {
+        name: 'Tokyo, Japan',
+        basePrice: 1080,
+        description: 'Future city energy, sushi experiences, culture, shopping, and anime hotspots.',
+        image: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=1200&q=80',
+        hotels: [
+          { name: 'Sakura Prime Hotel', price: 310 },
+          { name: 'Neon Central Stay', price: 370 },
+          { name: 'Imperial Zen Suites', price: 445 }
+        ],
+        foods: [
+          { name: 'Japanese Essentials Plan', price: 65 },
+          { name: 'Sushi & Ramen Select', price: 95 },
+          { name: 'Premium Kaiseki Dining', price: 145 }
+        ],
+        packages: [
+          { name: 'Tokyo Highlights Tour', price: 210 },
+          { name: 'Anime & Akihabara Day', price: 180 },
+          { name: 'Mt. Fuji Add-on Escape', price: 260 }
+        ]
+      },
+      switzerland: {
+        name: 'Swiss Alps, Switzerland',
+        basePrice: 1290,
+        description: 'Snow peaks, scenic railways, adventure sports, and luxury mountain stays.',
+        image: 'https://images.unsplash.com/photo-1508261303786-7e1b0f1c26f6?auto=format&fit=crop&w=1200&q=80',
+        hotels: [
+          { name: 'Alpine Crest Lodge', price: 390 },
+          { name: 'Snowline Resort & Spa', price: 470 },
+          { name: 'Glacier View Chalet', price: 540 }
+        ],
+        foods: [
+          { name: 'European Comfort Plan', price: 80 },
+          { name: 'Mountain Gourmet Plan', price: 120 },
+          { name: 'Luxury Swiss Dining', price: 170 }
+        ],
+        packages: [
+          { name: 'Scenic Rail Adventure', price: 260 },
+          { name: 'Ski & Snow Fun', price: 300 },
+          { name: 'Nature & Wellness Retreat', price: 280 }
+        ]
+      }
+    };
+
+    const state = {
+      destinationKey: 'bali',
+      ticketData: null
+    };
+
+    const destinationGrid = document.getElementById('destinationGrid');
+    const destinationSelect = document.getElementById('destinationSelect');
+    const hotelSelect = document.getElementById('hotelSelect');
+    const foodSelect = document.getElementById('foodSelect');
+    const packageSelect = document.getElementById('packageSelect');
+    const hotelList = document.getElementById('hotelList');
+    const foodList = document.getElementById('foodList');
+    const packageList = document.getElementById('packageList');
+    const hotelCount = document.getElementById('hotelCount');
+    const foodCount = document.getElementById('foodCount');
+    const packageCount = document.getElementById('packageCount');
+    const bookingForm = document.getElementById('bookingForm');
+    const resetBtn = document.getElementById('resetBtn');
+    const resultSection = document.getElementById('resultSection');
+    const ticketDetails = document.getElementById('ticketDetails');
+    const downloadPdfBtn = document.getElementById('downloadPdfBtn');
+    const bookAnotherBtn = document.getElementById('bookAnotherBtn');
+
+    const sumDestination = document.getElementById('sumDestination');
+    const sumHotel = document.getElementById('sumHotel');
+    const sumFood = document.getElementById('sumFood');
+    const sumPackage = document.getElementById('sumPackage');
+    const sumGuests = document.getElementById('sumGuests');
+    const sumDays = document.getElementById('sumDays');
+    const sumTotal = document.getElementById('sumTotal');
+    const bookingBadge = document.getElementById('bookingBadge');
+    const previewDestination = document.getElementById('previewDestination');
+    const previewHotel = document.getElementById('previewHotel');
+    const previewFood = document.getElementById('previewFood');
+    const previewPackage = document.getElementById('previewPackage');
+    const previewPrice = document.getElementById('previewPrice');
+
+    function formatMoney(value) {
+      return `$${value.toLocaleString()}`;
+    }
+
+    function setDefaultDates() {
+      const today = new Date();
+      const tomorrow = new Date(today);
+      tomorrow.setDate(today.getDate() + 1);
+      const threeDaysLater = new Date(today);
+      threeDaysLater.setDate(today.getDate() + 4);
+
+      document.getElementById('checkIn').value = tomorrow.toISOString().split('T')[0];
+      document.getElementById('checkOut').value = threeDaysLater.toISOString().split('T')[0];
+    }
+
+    function renderDestinationCards() {
+      destinationGrid.innerHTML = Object.entries(travelData).map(([key, item]) => `
+    <article class="destination-card ${state.destinationKey === key ? 'active' : ''}" data-key="${key}" style="background-image:url('${item.image}')">
+      <div class="card-content">
+        <h4>${item.name}</h4>
+        <p>${item.description}</p>
+      </div>
+    </article>
+  `).join('');
+
+      [...destinationGrid.querySelectorAll('.destination-card')].forEach(card => {
+        card.addEventListener('click', () => {
+          state.destinationKey = card.dataset.key;
+          destinationSelect.value = state.destinationKey;
+          renderDestinationCards();
+          renderOptions();
+          updateSummary();
+          window.location.hash = 'booking';
+        });
+      });
+    }
+
+    function populateDestinationSelect() {
+      destinationSelect.innerHTML = Object.entries(travelData)
+        .map(([key, item]) => `<option value="${key}">${item.name}</option>`)
+        .join('');
+      destinationSelect.value = state.destinationKey;
+    }
+
+    function fillSelect(select, items) {
+      select.innerHTML = items.map((item, index) => `
+    <option value="${index}">${item.name} - ${formatMoney(item.price)}</option>
+  `).join('');
+    }
+
+    function renderOptionList(container, items) {
+      container.innerHTML = items.map(item => `
+    <div class="option-line">
+      <div>
+        <strong>${item.name}</strong>
+        <small>Curated for this destination</small>
+      </div>
+      <span class="price-pill">${formatMoney(item.price)}</span>
+    </div>
+  `).join('');
+    }
+
+    function renderOptions() {
+      const current = travelData[state.destinationKey];
+      fillSelect(hotelSelect, current.hotels);
+      fillSelect(foodSelect, current.foods);
+      fillSelect(packageSelect, current.packages);
+
+      renderOptionList(hotelList, current.hotels);
+      renderOptionList(foodList, current.foods);
+      renderOptionList(packageList, current.packages);
+
+      hotelCount.textContent = `${current.hotels.length} options`;
+      foodCount.textContent = `${current.foods.length} options`;
+      packageCount.textContent = `${current.packages.length} options`;
+    }
+
+    function getTravelDays() {
+      const checkIn = new Date(document.getElementById('checkIn').value);
+      const checkOut = new Date(document.getElementById('checkOut').value);
+      const diff = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+      return diff > 0 ? diff : 1;
+    }
+
+    function calculateTotal() {
+      const current = travelData[state.destinationKey];
+      const guests = Number(document.getElementById('guests').value) || 1;
+      const days = getTravelDays();
+      const hotel = current.hotels[Number(hotelSelect.value)] || current.hotels[0];
+      const food = current.foods[Number(foodSelect.value)] || current.foods[0];
+      const pack = current.packages[Number(packageSelect.value)] || current.packages[0];
+
+      const total = current.basePrice + (hotel.price * days) + (food.price * guests * days) + pack.price * guests;
+
+      return {
+        guests,
+        days,
+        hotel,
+        food,
+        pack,
+        total
+      };
+    }
+
+    function updatePreview(calc) {
+      const current = travelData[state.destinationKey];
+      previewDestination.textContent = current.name;
+      previewHotel.textContent = calc.hotel.name;
+      previewFood.textContent = calc.food.name;
+      previewPackage.textContent = calc.pack.name;
+      previewPrice.textContent = formatMoney(calc.total);
+    }
+
+    function updateSummary() {
+      const current = travelData[state.destinationKey];
+      const calc = calculateTotal();
+
+      sumDestination.textContent = current.name;
+      sumHotel.textContent = calc.hotel.name;
+      sumFood.textContent = calc.food.name;
+      sumPackage.textContent = calc.pack.name;
+      sumGuests.textContent = calc.guests;
+      sumDays.textContent = calc.days;
+      sumTotal.textContent = formatMoney(calc.total);
+      updatePreview(calc);
+
+      if (bookingForm.checkValidity()) {
+        bookingBadge.textContent = 'Ready to book';
+        bookingBadge.className = 'ready';
+      } else {
+        bookingBadge.textContent = 'Complete details';
+        bookingBadge.className = 'pending';
+      }
+    }
+
+    function attachFormListeners() {
+      [destinationSelect, hotelSelect, foodSelect, packageSelect, document.getElementById('guests'), document.getElementById('checkIn'), document.getElementById('checkOut')]
+        .forEach(el => el.addEventListener('change', () => {
+          if (el === destinationSelect) {
+            state.destinationKey = destinationSelect.value;
+            renderDestinationCards();
+            renderOptions();
+          }
+          updateSummary();
+        }));
+
+      ['fullName', 'email', 'phone'].forEach(id => {
+        document.getElementById(id).addEventListener('input', updateSummary);
+      });
+    }
+
+    function makeBookingReference(name) {
+      const clean = name.trim().toUpperCase().replace(/[^A-Z]/g, '').slice(0, 3) || 'TRV';
+      return `${clean}-${Date.now().toString().slice(-6)}`;
+    }
+
+    function buildTicketData() {
+      const current = travelData[state.destinationKey];
+      const calc = calculateTotal();
+      const fullName = document.getElementById('fullName').value.trim();
+      const email = document.getElementById('email').value.trim();
+      const phone = document.getElementById('phone').value.trim();
+      const checkIn = document.getElementById('checkIn').value;
+      const checkOut = document.getElementById('checkOut').value;
+
+      return {
+        bookingId: makeBookingReference(fullName),
+        bookingDate: new Date().toLocaleString(),
+        customer: fullName,
+        email,
+        phone,
+        destination: current.name,
+        checkIn,
+        checkOut,
+        guests: calc.guests,
+        days: calc.days,
+        hotel: calc.hotel.name,
+        food: calc.food.name,
+        package: calc.pack.name,
+        total: calc.total
+      };
+    }
+
+    function renderTicket(ticket) {
+      const fields = [
+        ['Booking ID', ticket.bookingId],
+        ['Booking Date', ticket.bookingDate],
+        ['Traveler Name', ticket.customer],
+        ['Email', ticket.email],
+        ['Phone', ticket.phone],
+        ['Destination', ticket.destination],
+        ['Check-in', ticket.checkIn],
+        ['Check-out', ticket.checkOut],
+        ['Guests', ticket.guests],
+        ['Travel Days', ticket.days],
+        ['Hotel', ticket.hotel],
+        ['Food Plan', ticket.food],
+        ['Tour Package', ticket.package],
+        ['Total Paid', formatMoney(ticket.total)]
+      ];
+
+      ticketDetails.innerHTML = fields.map(([label, value]) => `
+    <div class="ticket-item">
+      <span>${label}</span>
+      <strong>${value}</strong>
+    </div>
+  `).join('');
+
+      resultSection.classList.remove('hidden');
+      resultSection.scrollIntoView({ behavior: 'smooth' });
+    }
+
+    function downloadTicketPdf(ticket) {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+
+      doc.setFillColor(8, 17, 32);
+      doc.rect(0, 0, 210, 40, 'F');
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(22);
+      doc.text('GlobeTrek Tours & Travels', 14, 18);
+      doc.setFontSize(11);
+      doc.text('Travel Booking Ticket', 14, 28);
+
+      doc.setTextColor(30, 41, 59);
+      doc.setFontSize(12);
+      doc.text(`Booking ID: ${ticket.bookingId}`, 14, 52);
+      doc.text(`Booking Date: ${ticket.bookingDate}`, 14, 60);
+
+      const rows = [
+        ['Traveler Name', ticket.customer],
+        ['Email', ticket.email],
+        ['Phone', ticket.phone],
+        ['Destination', ticket.destination],
+        ['Check-in', ticket.checkIn],
+        ['Check-out', ticket.checkOut],
+        ['Guests', String(ticket.guests)],
+        ['Travel Days', String(ticket.days)],
+        ['Hotel', ticket.hotel],
+        ['Food Plan', ticket.food],
+        ['Tour Package', ticket.package],
+        ['Total Paid', formatMoney(ticket.total)]
+      ];
+
+      let y = 76;
+      rows.forEach(([label, value], index) => {
+        if (index % 2 === 0) {
+          doc.setFillColor(241, 245, 249);
+          doc.rect(14, y - 6, 182, 10, 'F');
+        }
+        doc.setFont(undefined, 'bold');
+        doc.text(`${label}:`, 16, y);
+        doc.setFont(undefined, 'normal');
+        doc.text(String(value), 70, y);
+        y += 10;
+      });
+
+      doc.setFillColor(94, 234, 212);
+      doc.roundedRect(14, y + 4, 182, 18, 4, 4, 'F');
+      doc.setTextColor(3, 18, 29);
+      doc.setFont(undefined, 'bold');
+      doc.text('Thank you for booking with GlobeTrek. Have a safe and amazing journey!', 18, y + 15);
+
+      doc.save(`${ticket.bookingId}-ticket.pdf`);
+    }
+
+    bookingForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const checkIn = new Date(document.getElementById('checkIn').value);
+      const checkOut = new Date(document.getElementById('checkOut').value);
+      if (checkOut <= checkIn) {
+        alert('Check-out date must be later than check-in date.');
+        return;
+      }
+
+      const ticket = buildTicketData();
+      state.ticketData = ticket;
+      renderTicket(ticket);
+      downloadTicketPdf(ticket);
+    });
+
+    resetBtn.addEventListener('click', () => {
+      bookingForm.reset();
+      state.destinationKey = 'bali';
+      populateDestinationSelect();
+      setDefaultDates();
+      document.getElementById('guests').value = 2;
+      renderDestinationCards();
+      renderOptions();
+      updateSummary();
+    });
+
+    downloadPdfBtn.addEventListener('click', () => {
+      if (state.ticketData) {
+        downloadTicketPdf(state.ticketData);
+      }
+    });
+
+    bookAnotherBtn.addEventListener('click', () => {
+      resultSection.classList.add('hidden');
+      window.location.hash = 'booking';
+    });
+
+    function init() {
+      populateDestinationSelect();
+      setDefaultDates();
+      renderDestinationCards();
+      renderOptions();
+      attachFormListeners();
+      updateSummary();
+    }
+
+    init();
+  </script>
+</body>
+
+</html>

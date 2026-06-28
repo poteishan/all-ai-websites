@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>P</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        :root {
+            --bg: #0C0C0C;
+            --bg2: #141414;
+            --card: #1A1A1A;
+            --card-h: #222;
+            --accent: #D4943A;
+            --accent-l: #E8B86D;
+            --accent-d: #A06B1F;
+            --rust: #C75B39;
+            --fg: #F0EDE8;
+            --fg2: #B8B2A8;
+            --muted: #6B6560;
+            --border: #2A2724;
+            --ok: #4CAF50;
+            --err: #E74C3C
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box
+        }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--bg);
+            color: var(--fg);
+            overflow-x: hidden
+        }
+
+        h1,
+        h2,
+        h3,
+        h4 {
+            font-family: 'Playfair Display', serif
+        }
+
+        ::-webkit-scrollbar {
+            width: 5px
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg)
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--muted);
+            border-radius: 3px
+        }
+
+        .view {
+            display: none;
+            opacity: 0;
+            transition: opacity .4s
+        }
+
+        .view.active {
+            display: block;
+            opacity: 1
+        }
+
+        #hero-canvas {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none
+        }
+
+        .hero-bg {
+            background: radial-gradient(ellipse at 20% 80%, rgba(212, 148, 58, .15) 0%, transparent 50%), radial-gradient(ellipse at 80% 20%, rgba(199, 91, 57, .1) 0%, transparent 50%), var(--bg)
+        }
+
+        .card-h {
+            transition: transform .3s, box-shadow .3s, border-color .3s
+        }
+
+        .card-h:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, .4);
+            border-color: var(--accent) !important
+        }
+
+        .tab-b {
+            position: relative;
+            padding: 12px 24px;
+            color: var(--muted);
+            font-weight: 500;
+            cursor: pointer;
+            background: none;
+            border: none;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            transition: color .3s
+        }
+
+        .tab-b.active {
+            color: var(--accent)
+        }
+
+        .tab-b::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 2px;
+            background: var(--accent);
+            transition: width .3s
+        }
+
+        .tab-b.active::after {
+            width: 60%
+        }
+
+        .cart-ov {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .6);
+            backdrop-filter: blur(4px);
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .3s
+        }
+
+        .cart-ov.open {
+            opacity: 1;
+            pointer-events: all
+        }
+
+        .cart-pn {
+            position: fixed;
+            top: 0;
+            right: -420px;
+            width: 400px;
+            max-width: 100vw;
+            height: 100vh;
+            background: var(--bg2);
+            border-left: 1px solid var(--border);
+            z-index: 101;
+            transition: right .4s cubic-bezier(.16, 1, .3, 1);
+            display: flex;
+            flex-direction: column
+        }
+
+        .cart-pn.open {
+            right: 0
+        }
+
+        .modal-ov {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, .7);
+            backdrop-filter: blur(6px);
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity .3s
+        }
+
+        .modal-ov.open {
+            opacity: 1;
+            pointer-events: all
+        }
+
+        .modal-ct {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            max-width: 560px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: translateY(30px) scale(.95);
+            transition: transform .4s cubic-bezier(.16, 1, .3, 1)
+        }
+
+        .modal-ov.open .modal-ct {
+            transform: translateY(0) scale(1)
+        }
+
+        .toast {
+            padding: 14px 20px;
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-left: 3px solid var(--accent);
+            border-radius: 8px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            animation: tIn .4s ease, tOut .4s ease 2.6s forwards;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, .4);
+            pointer-events: auto
+        }
+
+        @keyframes tIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1
+            }
+        }
+
+        @keyframes tOut {
+            from {
+                opacity: 1
+            }
+
+            to {
+                transform: translateX(100%);
+                opacity: 0
+            }
+        }
+
+        .btn-p {
+            background: linear-gradient(135deg, var(--accent), var(--accent-d));
+            color: #0C0C0C;
+            font-weight: 600;
+            padding: 12px 28px;
+            border-radius: 8px;
+            border: none;
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            transition: all .3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px
+        }
+
+        .btn-p:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(212, 148, 58, .35)
+        }
+
+        .btn-o {
+            background: transparent;
+            color: var(--accent);
+            font-weight: 500;
+            padding: 12px 28px;
+            border-radius: 8px;
+            border: 1.5px solid var(--accent);
+            cursor: pointer;
+            font-family: 'DM Sans', sans-serif;
+            font-size: 15px;
+            transition: all .3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px
+        }
+
+        .btn-o:hover {
+            background: rgba(212, 148, 58, .1);
+            transform: translateY(-2px)
+        }
+
+        .btn-sm {
+            padding: 8px 18px;
+            font-size: 13px;
+            border-radius: 6px
+        }
+
+        .fi {
+            width: 100%;
+            padding: 12px 16px;
+            background: var(--bg);
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            color: var(--fg);
+            font-family: 'DM Sans', sans-serif;
+            font-size: 14px;
+            transition: border-color .3s;
+            outline: none
+        }
+
+        .fi:focus {
+            border-color: var(--accent)
+        }
+
+        .fi::placeholder {
+            color: var(--muted)
+        }
+
+        .stars {
+            color: var(--accent);
+            font-size: 10px
+        }
+
+        .qty-b {
+            width: 30px;
+            height: 30px;
+            background: var(--bg);
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            color: var(--fg);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            transition: all .2s
+        }
+
+        .qty-b:hover {
+            border-color: var(--accent);
+            color: var(--accent)
+        }
+
+        @keyframes chk {
+            0% {
+                transform: scale(0) rotate(-45deg);
+                opacity: 0
+            }
+
+            50% {
+                transform: scale(1.2) rotate(0);
+                opacity: 1
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1
+            }
+        }
+
+        .chk-a {
+            animation: chk .6s ease forwards
+        }
+
+        @keyframes fiu {
+            from {
+                transform: translateY(20px);
+                opacity: 0
+            }
+
+            to {
+                transform: translateY(0);
+                opacity: 1
+            }
+        }
+
+        .fiu {
+            opacity: 0;
+            animation: fiu .5s ease forwards
+        }
+
+        @keyframes fl {
+
+            0%,
+            100% {
+                transform: translateY(0)
+            }
+
+            50% {
+                transform: translateY(-10px)
+            }
+        }
+
+        .nav-s {
+            background: rgba(12, 12, 12, .95) !important;
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid var(--border) !important
+        }
+
+        .at {
+            padding: 4px 10px;
+            background: rgba(212, 148, 58, .1);
+            border: 1px solid rgba(212, 148, 58, .2);
+            border-radius: 20px;
+            font-size: 12px;
+            color: var(--accent-l)
+        }
+
+        .img-ov {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(to top, rgba(12, 12, 12, .8) 0%, transparent 60%)
+        }
+
+        .al {
+            width: 60px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--accent), var(--rust));
+            border-radius: 2px
+        }
+
+        @media(max-width:768px) {
+            .cart-pn {
+                width: 100vw
+            }
+
+            .ht {
+                font-size: 2.5rem !important
+            }
+        }
+
+        @media(prefers-reduced-motion:reduce) {
+
+            *,
+            *::before,
+            *::after {
+                animation-duration: .01ms !important;
+                transition-duration: .01ms !important
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div id="toast-ct" class="fixed top-20 right-4 z-[300] flex flex-col gap-3" style="pointer-events:none"></div>
+
+    <!-- NAV -->
+    <nav id="nav" class="fixed top-0 left-0 right-0 z-50 transition-all duration-300"
+        style="border-bottom:1px solid transparent">
+        <div class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+            <a href="#" onclick="showV('hero');return false" class="flex items-center gap-3">
+                <div class="w-10 h-10 rounded-lg flex items-center justify-center"
+                    style="background:linear-gradient(135deg,var(--accent),var(--rust))"><i
+                        class="fas fa-compass text-black text-lg"></i></div>
+                <span class="text-xl font-bold" style="font-family:'Playfair Display',serif">Wanderlust</span>
+            </a>
+            <div class="hidden md:flex items-center gap-8">
+                <a href="#" onclick="showV('destinations');return false"
+                    class="text-sm hover:text-[#D4943A] transition-colors" style="color:var(--fg2)">Destinations</a>
+                <a href="#" onclick="scrollFeatures();return false"
+                    class="text-sm hover:text-[#D4943A] transition-colors" style="color:var(--fg2)">About</a>
+                <a href="#" class="text-sm hover:text-[#D4943A] transition-colors" style="color:var(--fg2)">Contact</a>
+            </div>
+            <button onclick="togCart()" class="relative p-2 rounded-lg hover:bg-white/5 transition-colors"
+                aria-label="Cart">
+                <i class="fas fa-shopping-bag text-lg" style="color:var(--fg2)"></i>
+                <span id="c-badge"
+                    class="absolute -top-1 -right-1 w-5 h-5 rounded-full text-xs font-bold flex items-center justify-center text-black hidden"
+                    style="background:var(--accent)">0</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <section id="v-hero" class="view active">
+        <div class="relative min-h-screen hero-bg flex items-center justify-center">
+            <canvas id="hero-canvas"></canvas>
+            <div class="relative z-10 text-center px-6 max-w-4xl mx-auto">
+                <div class="al mx-auto mb-8"></div>
+                <h1 class="ht text-5xl md:text-7xl leading-tight mb-6" style="font-weight:900">Discover Your
+                    Next<br><span style="color:var(--accent)">Adventure</span></h1>
+                <p class="text-lg md:text-xl mb-10 max-w-2xl mx-auto" style="color:var(--fg2);line-height:1.7">Curated
+                    travel experiences with handpicked hotels, authentic cuisine, and unforgettable tour packages across
+                    the world's most stunning destinations.</p>
+                <div class="flex flex-col sm:flex-row items-center justify-center gap-4">
+                    <button onclick="showV('destinations')" class="btn-p text-base px-8 py-4"><i
+                            class="fas fa-globe-americas"></i> Explore Destinations</button>
+                    <button onclick="scrollFeatures()" class="btn-o text-base px-8 py-4"><i
+                            class="fas fa-play-circle"></i> How It Works</button>
+                </div>
+                <div class="flex flex-wrap justify-center gap-12 mt-16">
+                    <div class="text-center">
+                        <div class="text-3xl font-bold" style="color:var(--accent)">50+</div>
+                        <div class="text-sm mt-1" style="color:var(--muted)">Destinations</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold" style="color:var(--accent)">10K+</div>
+                        <div class="text-sm mt-1" style="color:var(--muted)">Happy Travelers</div>
+                    </div>
+                    <div class="text-center">
+                        <div class="text-3xl font-bold" style="color:var(--accent)">4.9</div>
+                        <div class="text-sm mt-1" style="color:var(--muted)">Average Rating</div>
+                    </div>
+                </div>
+            </div>
+            <div class="absolute bottom-8 left-1/2 -translate-x-1/2" style="animation:fl 2s ease-in-out infinite"><i
+                    class="fas fa-chevron-down text-lg" style="color:var(--muted)"></i></div>
+        </div>
+        <div id="features-section" class="max-w-7xl mx-auto px-6 py-24">
+            <div class="text-center mb-16">
+                <div class="al mx-auto mb-4"></div>
+                <h2 class="text-3xl md:text-4xl font-bold mb-4">Why Choose Wanderlust</h2>
+                <p style="color:var(--fg2)">Everything you need for the perfect trip, all in one place</p>
+            </div>
+            <div class="grid md:grid-cols-3 gap-8">
+                <div class="p-8 rounded-2xl border card-h" style="background:var(--card);border-color:var(--border)">
+                    <div class="w-14 h-14 rounded-xl flex items-center justify-center mb-5"
+                        style="background:rgba(212,148,58,.12)"><i class="fas fa-hotel text-2xl"
+                            style="color:var(--accent)"></i></div>
+                    <h3 class="text-xl font-bold mb-3">Premium Hotels</h3>
+                    <p class="text-sm leading-relaxed" style="color:var(--fg2)">Handpicked accommodations from luxury
+                        resorts to boutique stays, verified for quality and comfort.</p>
+                </div>
+                <div class="p-8 rounded-2xl border card-h" style="background:var(--card);border-color:var(--border)">
+                    <div class="w-14 h-14 rounded-xl flex items-center justify-center mb-5"
+                        style="background:rgba(199,91,57,.12)"><i class="fas fa-utensils text-2xl"
+                            style="color:var(--rust)"></i></div>
+                    <h3 class="text-xl font-bold mb-3">Authentic Cuisine</h3>
+                    <p class="text-sm leading-relaxed" style="color:var(--fg2)">Curated food packages featuring local
+                        delicacies, fine dining, and street food experiences.</p>
+                </div>
+                <div class="p-8 rounded-2xl border card-h" style="background:var(--card);border-color:var(--border)">
+                    <div class="w-14 h-14 rounded-xl flex items-center justify-center mb-5"
+                        style="background:rgba(212,148,58,.12)"><i class="fas fa-route text-2xl"
+                            style="color:var(--accent)"></i></div>
+                    <h3 class="text-xl font-bold mb-3">Guided Tours</h3>
+                    <p class="text-sm leading-relaxed" style="color:var(--fg2)">Expert-led tour packages covering iconic
+                        landmarks, hidden gems, and cultural experiences.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- DESTINATIONS -->
+    <section id="v-destinations" class="view">
+        <div class="pt-28 pb-24 max-w-7xl mx-auto px-6">
+            <div class="text-center mb-16">
+                <div class="al mx-auto mb-4"></div>
+                <h2 class="text-3xl md:text-5xl font-bold mb-4">Choose Your Destination</h2>
+                <p class="text-lg" style="color:var(--fg2)">Select a destination to explore hotels, food, and tour
+                    packages</p>
+            </div>
+            <div id="dest-grid" class="grid md:grid-cols-2 lg:grid-cols-3 gap-8"></div>
+        </div>
+    </section>
+
+    <!-- PACKAGES -->
+    <section id="v-packages" class="view">
+        <div class="pt-28 pb-24 max-w-7xl mx-auto px-6">
+            <div class="mb-8">
+                <button onclick="showV('destinations')"
+                    class="flex items-center gap-2 text-sm mb-6 hover:text-[#D4943A] transition-colors"
+                    style="color:var(--muted)"><i class="fas fa-arrow-left"></i> Back to Destinations</button>
+                <div class="flex flex-col md:flex-row md:items-end gap-6">
+                    <div class="flex-1">
+                        <h2 id="pkg-name" class="text-4xl md:text-5xl font-bold mb-2"></h2>
+                        <p id="pkg-desc" class="text-lg" style="color:var(--fg2)"></p>
+                    </div>
+                    <div class="flex flex-wrap gap-4">
+                        <div><label class="text-xs font-medium block mb-1"
+                                style="color:var(--muted)">Check-in</label><input type="date" id="ci" class="fi"
+                                style="width:155px"></div>
+                        <div><label class="text-xs font-medium block mb-1"
+                                style="color:var(--muted)">Check-out</label><input type="date" id="co" class="fi"
+                                style="width:155px"></div>
+                        <div><label class="text-xs font-medium block mb-1"
+                                style="color:var(--muted)">Travelers</label><select id="trav" class="fi"
+                                style="width:95px">
+                                <option value="1">1</option>
+                                <option value="2" selected>2</option>
+                                <option value="3">3</option>
+                                <option value="4">4</option>
+                                <option value="5">5</option>
+                                <option value="6">6</option>
+                            </select></div>
+                    </div>
+                </div>
+            </div>
+            <div class="flex border-b mb-8" style="border-color:var(--border)">
+                <button class="tab-b active" data-tab="hotels" onclick="swTab('hotels')"><i
+                        class="fas fa-hotel mr-2"></i>Hotels</button>
+                <button class="tab-b" data-tab="foods" onclick="swTab('foods')"><i class="fas fa-utensils mr-2"></i>Food
+                    Packages</button>
+                <button class="tab-b" data-tab="tours" onclick="swTab('tours')"><i class="fas fa-route mr-2"></i>Tour
+                    Packages</button>
+            </div>
+            <div id="tab-hotels" class="tc"></div>
+            <div id="tab-foods" class="tc hidden"></div>
+            <div id="tab-tours" class="tc hidden"></div>
+        </div>
+    </section>
+
+    <!-- CONFIRMATION -->
+    <section id="v-confirmation" class="view">
+        <div class="min-h-screen flex items-center justify-center px-6 py-28">
+            <div class="text-center max-w-lg mx-auto">
+                <div class="chk-a inline-flex items-center justify-center w-24 h-24 rounded-full mb-8"
+                    style="background:rgba(76,175,80,.15);border:2px solid var(--ok)"><i class="fas fa-check text-4xl"
+                        style="color:var(--ok)"></i></div>
+                <h2 class="text-3xl md:text-4xl font-bold mb-4 fiu">Booking Confirmed</h2>
+                <p class="mb-2 fiu" style="color:var(--fg2);animation-delay:.1s">Your booking reference is</p>
+                <div class="text-2xl font-bold mb-8 fiu"
+                    style="color:var(--accent);font-family:'DM Sans',monospace;animation-delay:.2s" id="cf-ref"></div>
+                <div id="cf-sum" class="text-left p-6 rounded-2xl border mb-8 fiu"
+                    style="background:var(--card);border-color:var(--border);animation-delay:.3s"></div>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center fiu" style="animation-delay:.4s">
+                    <button onclick="genPDF()" class="btn-p px-8 py-4"><i class="fas fa-file-pdf"></i> Download Ticket
+                        PDF</button>
+                    <button onclick="resetApp()" class="btn-o px-8 py-4"><i class="fas fa-compass"></i> Book Another
+                        Trip</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CART SIDEBAR -->
+    <div id="c-ov" class="cart-ov" onclick="togCart()"></div>
+    <div id="c-pn" class="cart-pn">
+        <div class="p-6 border-b flex items-center justify-between" style="border-color:var(--border)">
+            <h3 class="text-xl font-bold">Your Cart</h3>
+            <button onclick="togCart()"
+                class="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-white/5 transition-colors"
+                aria-label="Close"><i class="fas fa-times" style="color:var(--muted)"></i></button>
+        </div>
+        <div id="c-items" class="flex-1 overflow-y-auto p-6"></div>
+        <div id="c-foot" class="p-6 border-t" style="border-color:var(--border)"></div>
+    </div>
+
+    <!-- BOOKING MODAL -->
+    <div id="bk-mod" class="modal-ov">
+        <div class="modal-ct">
+            <div class="p-6 border-b flex items-center justify-between" style="border-color:var(--border)">
+                <h3 class="text-xl font-bold">Complete Your Booking</h3>
+                <button onclick="closeBk()"
+                    class="w-9 h-9 rounded-lg flex items-center justify-center hover:bg-white/5 transition-colors"
+                    aria-label="Close"><i class="fas fa-times" style="color:var(--muted)"></i></button>
+            </div>
+            <form id="bk-form" class="p-6 space-y-5" onsubmit="return handleBk(event)">
+                <div><label class="text-sm font-medium block mb-2" style="color:var(--fg2)">Full Name *</label><input
+                        type="text" id="b-name" class="fi" placeholder="John Doe" required></div>
+                <div><label class="text-sm font-medium block mb-2" style="color:var(--fg2)">Email Address
+                        *</label><input type="email" id="b-email" class="fi" placeholder="john@example.com" required>
+                </div>
+                <div><label class="text-sm font-medium block mb-2" style="color:var(--fg2)">Phone Number *</label><input
+                        type="tel" id="b-phone" class="fi" placeholder="+91 98765 43210" required></div>
+                <div><label class="text-sm font-medium block mb-2" style="color:var(--fg2)">ID Number (Passport/Aadhaar)
+                        *</label><input type="text" id="b-id" class="fi" placeholder="e.g., PASSPORT XXXXXXXX" required>
+                </div>
+                <div><label class="text-sm font-medium block mb-2" style="color:var(--fg2)">Special
+                        Requests</label><textarea id="b-req" class="fi" rows="3"
+                        placeholder="Dietary requirements, accessibility needs, etc."></textarea></div>
+                <div id="bk-err" class="text-sm hidden" style="color:var(--err)"></div>
+                <button type="submit" class="btn-p w-full justify-center py-4 text-base"><i class="fas fa-lock"></i>
+                    Confirm & Book</button>
+                <p class="text-xs text-center" style="color:var(--muted)"><i class="fas fa-shield-alt mr-1"></i> Your
+                    payment will be processed securely</p>
+            </form>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer id="ft" class="border-t py-12 px-6" style="border-color:var(--border);background:var(--bg2)">
+        <div class="max-w-7xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+            <div class="flex items-center gap-3">
+                <div class="w-8 h-8 rounded-lg flex items-center justify-center"
+                    style="background:linear-gradient(135deg,var(--accent),var(--rust))"><i
+                        class="fas fa-compass text-black text-sm"></i></div>
+                <span class="font-bold" style="font-family:'Playfair Display',serif">Wanderlust</span>
+            </div>
+            <div class="flex gap-6">
+                <a href="#" class="text-sm hover:text-[#D4943A] transition-colors"
+                    style="color:var(--muted)">Privacy</a>
+                <a href="#" class="text-sm hover:text-[#D4943A] transition-colors" style="color:var(--muted)">Terms</a>
+                <a href="#" class="text-sm hover:text-[#D4943A] transition-colors"
+                    style="color:var(--muted)">Support</a>
+            </div>
+            <div class="flex gap-4">
+                <a href="#"
+                    class="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/5 transition-colors"
+                    style="color:var(--muted)" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                <a href="#"
+                    class="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/5 transition-colors"
+                    style="color:var(--muted)" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                <a href="#"
+                    class="w-9 h-9 rounded-full flex items-center justify-center hover:bg-white/5 transition-colors"
+                    style="color:var(--muted)" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        /* ============ DATA ============ */
+        const D = [
+            {
+                id: 'goa', name: 'Goa', country: 'India', img: 'https://picsum.photos/seed/goa-coast7/600/400.jpg', desc: 'Sun-kissed beaches, vibrant nightlife, and Portuguese heritage along the Arabian Sea coast.',
+                hotels: [{ id: 'goa-h1', name: 'Taj Exotica Resort & Spa', r: 5, ppn: 8500, img: 'https://picsum.photos/seed/taj-goa2/400/300.jpg', am: ['Pool', 'Spa', 'Beach Access', 'WiFi', 'Fine Dining'] }, { id: 'goa-h2', name: 'W Goa', r: 5, ppn: 12000, img: 'https://picsum.photos/seed/w-hotel-goa3/400/300.jpg', am: ['Beachfront', 'Rooftop Bar', 'Pool', 'Gym', 'Nightclub'] }, { id: 'goa-h3', name: 'Palolem Beach Resort', r: 3, ppn: 3200, img: 'https://picsum.photos/seed/palolem-res4/400/300.jpg', am: ['Beach', 'Restaurant', 'WiFi', 'Kayaking'] }],
+                foods: [{ id: 'goa-f1', name: 'Goan Fish Curry Thali', p: 650, img: 'https://picsum.photos/seed/fish-curry5/300/200.jpg', d: 'Traditional fish curry with rice, sol kadhi, and sides' }, { id: 'goa-f2', name: 'Prawn Balchao Meal', p: 750, img: 'https://picsum.photos/seed/prawn-bal6/300/200.jpg', d: 'Spicy tangy prawn pickle with steamed rice and salad' }, { id: 'goa-f3', name: 'Beachside Seafood Platter', p: 1400, img: 'https://picsum.photos/seed/seafood-pl7/300/200.jpg', d: 'Grilled fish, prawns, crab, calamari with dips' }, { id: 'goa-f4', name: 'Goan Dessert Sampler', p: 400, img: 'https://picsum.photos/seed/bebinca-d8/300/200.jpg', d: 'Bebinca, dodol, and neureos with ice cream' }],
+                tours: [{ id: 'goa-t1', name: 'North Goa Beach Hopping', p: 2500, dur: 'Full Day', img: 'https://picsum.photos/seed/goa-beach9/400/300.jpg', hl: ['Calangute Beach', 'Baga Beach', 'Anjuna Flea Market', 'Fort Aguada'] }, { id: 'goa-t2', name: 'Dudhsagar Falls & Spice Plantation', p: 3000, dur: 'Full Day', img: 'https://picsum.photos/seed/dudhsagar10/400/300.jpg', hl: ['Dudhsagar Waterfall', 'Spice Plantation Tour', 'Buffet Lunch', 'Jeep Safari'] }, { id: 'goa-t3', name: 'Old Goa Heritage Walk', p: 1500, dur: 'Half Day', img: 'https://picsum.photos/seed/old-goa-ch11/400/300.jpg', hl: ['Basilica of Bom Jesus', 'Se Cathedral', 'Museum of Christian Art', 'Portuguese Quarter'] }]
+            },
+            {
+                id: 'bali', name: 'Bali', country: 'Indonesia', img: 'https://picsum.photos/seed/bali-rice12/600/400.jpg', desc: 'Lush rice terraces, ancient temples, world-class surfing, and Balinese spirituality.',
+                hotels: [{ id: 'bali-h1', name: 'Four Seasons at Sayan', r: 5, ppn: 25000, img: 'https://picsum.photos/seed/four-s13/400/300.jpg', am: ['River View', 'Spa', 'Infinity Pool', 'Yoga', 'Fine Dining'] }, { id: 'bali-h2', name: 'The Mulia Resort Nusa Dua', r: 5, ppn: 18000, img: 'https://picsum.photos/seed/mulia-b14/400/300.jpg', am: ['Private Beach', 'Multiple Pools', 'Spa', 'Golf', 'Kids Club'] }, { id: 'bali-h3', name: 'Puri Garden Hotel Ubud', r: 3, ppn: 3500, img: 'https://picsum.photos/seed/puri-g15/400/300.jpg', am: ['Garden View', 'Pool', 'Restaurant', 'Bike Rental', 'WiFi'] }],
+                foods: [{ id: 'bali-f1', name: 'Babi Guling Feast', p: 800, img: 'https://picsum.photos/seed/babi-g16/300/200.jpg', d: 'Traditional Balinese roast pork with rice, lawar, and sambal' }, { id: 'bali-f2', name: 'Nasi Campur Bali', p: 500, img: 'https://picsum.photos/seed/nasi-c17/300/200.jpg', d: 'Mixed rice with Balinese dishes, satay, and crispy toppings' }, { id: 'bali-f3', name: 'Jimbaran Seafood BBQ', p: 1600, img: 'https://picsum.photos/seed/jimbaran18/300/200.jpg', d: 'Fresh grilled seafood on the beach with sunset views' }, { id: 'bali-f4', name: 'Balinese Coffee & Dessert', p: 350, img: 'https://picsum.photos/seed/bali-cof19/300/200.jpg', d: 'Luwak coffee tasting with traditional Balinese sweets' }],
+                tours: [{ id: 'bali-t1', name: 'Ubud Rice Terraces & Temples', p: 2000, dur: 'Full Day', img: 'https://picsum.photos/seed/tegal20/400/300.jpg', hl: ['Tegallalang Rice Terraces', 'Tirta Empul Temple', 'Monkey Forest', 'Ubud Art Market'] }, { id: 'bali-t2', name: 'Mount Batur Sunrise Trek', p: 2500, dur: 'Full Day', img: 'https://picsum.photos/seed/batur-sun21/400/300.jpg', hl: ['2AM Start Trek', 'Sunrise at Summit', 'Breakfast on Volcano', 'Hot Springs'] }, { id: 'bali-t3', name: 'Uluwatu & Kecak Fire Dance', p: 1800, dur: 'Half Day', img: 'https://picsum.photos/seed/uluwatu-22/400/300.jpg', hl: ['Uluwatu Cliff Temple', 'Kecak Fire Dance', 'Sunset Views', 'Jimbaran Dinner'] }]
+            },
+            {
+                id: 'paris', name: 'Paris', country: 'France', img: 'https://picsum.photos/seed/paris-eiff23/600/400.jpg', desc: 'The City of Light — iconic landmarks, world-class art, and unparalleled gastronomy.',
+                hotels: [{ id: 'paris-h1', name: 'Le Meurice', r: 5, ppn: 35000, img: 'https://picsum.photos/seed/lemeu24/400/300.jpg', am: ['Tuileries View', 'Michelin Restaurant', 'Spa', 'Butler Service', 'Bar'] }, { id: 'paris-h2', name: 'Hotel Plaza Athenee', r: 5, ppn: 28000, img: 'https://picsum.photos/seed/plaza-a25/400/300.jpg', am: ['Eiffel Tower View', 'Dior Spa', 'Fine Dining', 'Garden Courtyard'] }, { id: 'paris-h3', name: 'Hotel des Arts Montmartre', r: 3, ppn: 6500, img: 'https://picsum.photos/seed/arts-m26/400/300.jpg', am: ['Montmartre Location', 'Rooftop Terrace', 'WiFi', 'Bistro'] }],
+                foods: [{ id: 'paris-f1', name: 'Classic French Bistro Dinner', p: 2500, img: 'https://picsum.photos/seed/french-b27/300/200.jpg', d: 'French onion soup, coq au vin, creme brulee with wine' }, { id: 'paris-f2', name: 'Parisian Patisserie Box', p: 1200, img: 'https://picsum.photos/seed/paris-pa28/300/200.jpg', d: 'Assortment of croissants, macarons, eclairs, and tartlets' }, { id: 'paris-f3', name: 'Seine River Dinner Cruise', p: 4500, img: 'https://picsum.photos/seed/seine-cr29/300/200.jpg', d: '3-course gourmet dinner with Eiffel Tower views from the river' }, { id: 'paris-f4', name: 'Cheese & Wine Tasting', p: 1800, img: 'https://picsum.photos/seed/cheese-w30/300/200.jpg', d: 'Curated selection of French cheeses paired with regional wines' }],
+                tours: [{ id: 'paris-t1', name: 'Iconic Paris Landmarks Tour', p: 3000, dur: 'Full Day', img: 'https://picsum.photos/seed/paris-lan31/400/300.jpg', hl: ['Eiffel Tower Summit', 'Louvre Museum', 'Notre-Dame', 'Champs-Elysees'] }, { id: 'paris-t2', name: 'Versailles Palace Day Trip', p: 5000, dur: 'Full Day', img: 'https://picsum.photos/seed/versail32/400/300.jpg', hl: ['Palace Tour', 'Hall of Mirrors', 'Gardens', 'Marie Antoinette Estate'] }, { id: 'paris-t3', name: 'Montmartre Art & History Walk', p: 1500, dur: 'Half Day', img: 'https://picsum.photos/seed/montm-art33/400/300.jpg', hl: ['Sacre-Coeur', 'Artist Square', 'Moulin Rouge', 'Cafe Culture'] }]
+            },
+            {
+                id: 'tokyo', name: 'Tokyo', country: 'Japan', img: 'https://picsum.photos/seed/tokyo-neon34/600/400.jpg', desc: 'Where ancient tradition meets futuristic innovation — temples, neon, and sushi.',
+                hotels: [{ id: 'tokyo-h1', name: 'Aman Tokyo', r: 5, ppn: 45000, img: 'https://picsum.photos/seed/aman-t35/400/300.jpg', am: ['Skyline View', 'Onsen Spa', 'Japanese Garden', 'Fine Dining', 'Zen Lounge'] }, { id: 'tokyo-h2', name: 'Park Hyatt Tokyo', r: 5, ppn: 30000, img: 'https://picsum.photos/seed/park-hy36/400/300.jpg', am: ['Shinjuku View', 'New York Bar', 'Pool', 'Spa', 'Concierge'] }, { id: 'tokyo-h3', name: 'Sakura Hotel Hatagaya', r: 3, ppn: 4000, img: 'https://picsum.photos/seed/sakura-h37/400/300.jpg', am: ['Japanese Style Rooms', 'Onsen', 'Kitchen', 'Laundry', 'WiFi'] }],
+                foods: [{ id: 'tokyo-f1', name: 'Omakase Sushi Experience', p: 5000, img: 'https://picsum.photos/seed/omakase38/300/200.jpg', d: 'Chef\'s choice 12-piece sushi course with miso and matcha' }, { id: 'tokyo-f2', name: 'Ramen & Gyoza Combo', p: 800, img: 'https://picsum.photos/seed/tokyo-ram39/300/200.jpg', d: 'Authentic tonkotsu ramen with pan-fried gyoza and draft beer' }, { id: 'tokyo-f3', name: 'Izakaya Street Food Tour', p: 2200, img: 'https://picsum.photos/seed/izakaya-40/300/200.jpg', d: 'Yakitori, takoyaki, edamame, and drinks at 4 hidden izakayas' }, { id: 'tokyo-f4', name: 'Wagyu Teppanyaki Dinner', p: 6000, img: 'https://picsum.photos/seed/wagyu-tep41/300/200.jpg', d: 'A5 Wagyu beef teppanyaki with seasonal vegetables and sake' }],
+                tours: [{ id: 'tokyo-t1', name: 'Classic Tokyo Highlights', p: 3500, dur: 'Full Day', img: 'https://picsum.photos/seed/tokyo-cla42/400/300.jpg', hl: ['Senso-ji Temple', 'Shibuya Crossing', 'Meiji Shrine', 'Akihabara'] }, { id: 'tokyo-t2', name: 'Mount Fuji Day Trip', p: 4500, dur: 'Full Day', img: 'https://picsum.photos/seed/mt-fuji43/400/300.jpg', hl: ['Mt. Fuji 5th Station', 'Lake Kawaguchi', 'Chureito Pagoda', 'Onsen Lunch'] }, { id: 'tokyo-t3', name: 'Tsukiji & Asakusa Culture Walk', p: 2000, dur: 'Half Day', img: 'https://picsum.photos/seed/tsukiji-m44/400/300.jpg', hl: ['Tsukiji Outer Market', 'Senso-ji', 'Nakamise Street', 'Sumida River'] }]
+            },
+            {
+                id: 'dubai', name: 'Dubai', country: 'UAE', img: 'https://picsum.photos/seed/dubai-sky45/600/400.jpg', desc: 'A futuristic oasis of luxury shopping, ultramodern architecture, and desert adventures.',
+                hotels: [{ id: 'dubai-h1', name: 'Burj Al Arab', r: 5, ppn: 55000, img: 'https://picsum.photos/seed/burj-al46/400/300.jpg', am: ['Private Beach', 'Butler Service', 'Helipad', '9 Restaurants', 'Spa'] }, { id: 'dubai-h2', name: 'Atlantis The Palm', r: 5, ppn: 22000, img: 'https://picsum.photos/seed/atlantis47/400/300.jpg', am: ['Water Park', 'Aquarium', 'Private Beach', 'Multiple Pools', 'Nobu'] }, { id: 'dubai-h3', name: 'Rove Downtown Dubai', r: 3, ppn: 5000, img: 'https://picsum.photos/seed/rove-du48/400/300.jpg', am: ['Burj Khalifa View', 'Pool', 'Gym', 'Rooftop Bar', 'WiFi'] }],
+                foods: [{ id: 'dubai-f1', name: 'Luxury Brunch at Burj Khalifa', p: 3500, img: 'https://picsum.photos/seed/burj-bru49/300/200.jpg', d: 'Premium brunch with panoramic views from the world\'s tallest building' }, { id: 'dubai-f2', name: 'Arabic Mezze Platter', p: 900, img: 'https://picsum.photos/seed/arabic-m50/300/200.jpg', d: 'Hummus, falafel, tabbouleh, shawarma, and fresh bread' }, { id: 'dubai-f3', name: 'Desert Safari Dinner', p: 2000, img: 'https://picsum.photos/seed/desert-di51/300/200.jpg', d: 'BBQ dinner under stars with shisha, belly dance, and dune bashing' }, { id: 'dubai-f4', name: 'Dhow Cruise Dinner', p: 1800, img: 'https://picsum.photos/seed/dhow-cru52/300/200.jpg', d: 'Traditional dhow cruise along Dubai Creek with international buffet' }],
+                tours: [{ id: 'dubai-t1', name: 'Dubai City & Desert Safari', p: 4000, dur: 'Full Day', img: 'https://picsum.photos/seed/dubai-des53/400/300.jpg', hl: ['Burj Khalifa', 'Dubai Mall', 'Dune Bashing', 'Desert Camp', 'BBQ Dinner'] }, { id: 'dubai-t2', name: 'Abu Dhabi Grand Mosque Tour', p: 3500, dur: 'Full Day', img: 'https://picsum.photos/seed/abu-dhabi54/400/300.jpg', hl: ['Sheikh Zayed Mosque', 'Emirates Palace', 'Heritage Village', 'Corniche'] }, { id: 'dubai-t3', name: 'Dubai Marina & Palm Jumeirah', p: 2500, dur: 'Half Day', img: 'https://picsum.photos/seed/palm-jum55/400/300.jpg', hl: ['Marina Walk', 'Palm Jumeirah View', 'Atlantis', 'Monorail Ride'] }]
+            },
+            {
+                id: 'santorini', name: 'Santorini', country: 'Greece', img: 'https://picsum.photos/seed/santorini-sun56/600/400.jpg', desc: 'Whitewashed villages on volcanic cliffs, legendary sunsets over the Aegean Sea.',
+                hotels: [{ id: 'san-h1', name: 'Canaves Oia Suites', r: 5, ppn: 32000, img: 'https://picsum.photos/seed/canaves57/400/300.jpg', am: ['Caldera View', 'Infinity Pool', 'Spa', 'Wine Tasting', 'Concierge'] }, { id: 'san-h2', name: 'Mystique Luxury Collection', r: 5, ppn: 28000, img: 'https://picsum.photos/seed/mystique58/400/300.jpg', am: ['Cliffside', 'Pool', 'Restaurant', 'Spa', 'Sunset Terrace'] }, { id: 'san-h3', name: 'Perissa Beach Hotel', r: 3, ppn: 5500, img: 'https://picsum.photos/seed/perissa-h59/400/300.jpg', am: ['Beachfront', 'Pool', 'Restaurant', 'WiFi', 'Car Rental'] }],
+                foods: [{ id: 'san-f1', name: 'Traditional Greek Meze', p: 900, img: 'https://picsum.photos/seed/greek-me60/300/200.jpg', d: 'Dolmades, tzatziki, fava, tomatokeftedes, and fresh bread' }, { id: 'san-f2', name: 'Fresh Seafood by the Caldera', p: 2200, img: 'https://picsum.photos/seed/caldera-s61/300/200.jpg', d: 'Grilled octopus, red mullet, calamari with Santorini wine' }, { id: 'san-f3', name: 'Santorini Wine & Sunset Dinner', p: 3000, img: 'https://picsum.photos/seed/santo-win62/300/200.jpg', d: 'Volcanic wine tasting followed by a 4-course sunset dinner' }, { id: 'san-f4', name: 'Greek Breakfast Spread', p: 600, img: 'https://picsum.photos/seed/greek-bk63/300/200.jpg', d: 'Greek yogurt, honey, pastries, fresh fruit, and Greek coffee' }],
+                tours: [{ id: 'san-t1', name: 'Oia to Fira Caldera Hike', p: 1500, dur: 'Half Day', img: 'https://picsum.photos/seed/caldera-h64/400/300.jpg', hl: ['Oia Start', 'Caldera Path', 'Skaros Rock', 'Fira End', 'Panoramic Views'] }, { id: 'san-t2', name: 'Volcano & Hot Springs Boat Trip', p: 2500, dur: 'Full Day', img: 'https://picsum.photos/seed/santo-vol65/400/300.jpg', hl: ['Nea Kameni Volcano', 'Hot Springs Swim', 'Thirassia Island', 'BBQ on Board'] }, { id: 'san-t3', name: 'Santorini Wine Country Tour', p: 2000, dur: 'Half Day', img: 'https://picsum.photos/seed/santo-vin66/400/300.jpg', hl: ['3 Wineries', 'Volcanic Soil Tasting', 'Santo Wines', 'Venetsanos Winery'] }]
+            }
+        ];
+
+        /* ============ STATE ============ */
+        let cart = [], curDest = null, bkRef = '', bkDet = null;
+
+        /* ============ UTILS ============ */
+        const fp = a => '\u20B9' + a.toLocaleString('en-IN');
+        const gSt = r => '<span class="stars">' + '<i class="fas fa-star"></i> '.repeat(r) + '<i class="far fa-star"></i> '.repeat(5 - r) + '</span>';
+        const gRef = () => 'WL-' + new Date().getFullYear() + '-' + Math.random().toString(36).substr(2, 6).toUpperCase();
+        function gNights() { const a = document.getElementById('ci').value, b = document.getElementById('co').value; if (!a || !b) return 1; return Math.max(1, Math.round((new Date(b) - new Date(a)) / (864e5))) }
+        function gTrav() { return parseInt(document.getElementById('trav').value) || 1 }
+        function setDates() { const t = new Date(), a = new Date(t); a.setDate(a.getDate() + 7); const b = new Date(a); b.setDate(b.getDate() + 3); document.getElementById('ci').value = a.toISOString().split('T')[0]; document.getElementById('co').value = b.toISOString().split('T')[0] }
+        function scrollFeatures() { showV('hero'); setTimeout(() => document.getElementById('features-section')?.scrollIntoView({ behavior: 'smooth' }), 100) }
+
+        /* ============ TOAST ============ */
+        function toast(m, ic = 'fa-check-circle', c = 'var(--accent)') { const ct = document.getElementById('toast-ct'), t = document.createElement('div'); t.className = 'toast'; t.style.borderLeftColor = c; t.innerHTML = `<i class="fas ${ic}" style="color:${c}"></i><span>${m}</span>`; ct.appendChild(t); setTimeout(() => t.remove(), 3200) }
+
+        /* ============ VIEWS ============ */
+        function showV(id) { document.querySelectorAll('.view').forEach(v => v.classList.remove('active')); const t = document.getElementById('v-' + id); if (t) { t.classList.add('active'); window.scrollTo({ top: 0, behavior: 'smooth' }) } document.getElementById('ft').style.display = id === 'confirmation' ? 'none' : 'block' }
+
+        /* ============ NAV SCROLL ============ */
+        window.addEventListener('scroll', () => { document.getElementById('nav').classList.toggle('nav-s', window.scrollY > 50) });
+
+        /* ============ RENDER DESTINATIONS ============ */
+        function renderDest() {
+            document.getElementById('dest-grid').innerHTML = D.map(d => `
+<div class="rounded-2xl overflow-hidden border card-h cursor-pointer group" style="background:var(--card);border-color:var(--border)" onclick="selDest('${d.id}')">
+  <div class="relative h-56 overflow-hidden">
+    <img src="${d.img}" alt="${d.name}" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" loading="lazy">
+    <div class="img-ov"></div>
+    <div class="absolute top-4 left-4"><span class="px-3 py-1 rounded-full text-xs font-semibold" style="background:rgba(212,148,58,.9);color:#0C0C0C">${d.country}</span></div>
+    <div class="absolute bottom-4 left-4 right-4"><h3 class="text-2xl font-bold mb-1">${d.name}</h3></div>
+  </div>
+  <div class="p-5">
+    <p class="text-sm leading-relaxed mb-4" style="color:var(--fg2)">${d.desc}</p>
+    <div class="flex items-center justify-between">
+      <div class="flex items-center gap-4 text-xs" style="color:var(--muted)">
+        <span><i class="fas fa-hotel mr-1"></i>${d.hotels.length}</span>
+        <span><i class="fas fa-utensils mr-1"></i>${d.foods.length}</span>
+        <span><i class="fas fa-route mr-1"></i>${d.tours.length}</span>
+      </div>
+      <span class="text-sm font-semibold" style="color:var(--accent)">Explore <i class="fas fa-arrow-right ml-1 text-xs"></i></span>
+    </div>
+  </div>
+</div>`).join('')
+        }
+
+        /* ============ SELECT DEST ============ */
+        function selDest(id) { curDest = D.find(d => d.id === id); if (!curDest) return; document.getElementById('pkg-name').textContent = curDest.name + ', ' + curDest.country; document.getElementById('pkg-desc').textContent = curDest.desc; setDates(); swTab('hotels'); showV('packages') }
+
+        /* ============ TABS ============ */
+        function swTab(tab) { document.querySelectorAll('.tab-b').forEach(b => b.classList.remove('active')); document.querySelector(`.tab-b[data-tab="${tab}"]`).classList.add('active'); document.querySelectorAll('.tc').forEach(c => c.classList.add('hidden')); document.getElementById('tab-' + tab).classList.remove('hidden'); renderTC(tab) }
+
+        function renderTC(tab) {
+            if (!curDest) return; const c = document.getElementById('tab-' + tab);
+            if (tab === 'hotels') {
+                c.innerHTML = `<div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">` + curDest.hotels.map(h => `
+  <div class="rounded-2xl overflow-hidden border card-h" style="background:var(--card);border-color:var(--border)">
+    <div class="relative h-48 overflow-hidden">
+      <img src="${h.img}" alt="${h.name}" class="w-full h-full object-cover" loading="lazy">
+      <div class="absolute top-3 right-3 px-2 py-1 rounded-lg text-xs font-bold" style="background:rgba(0,0,0,.7);color:var(--accent)">${gSt(h.r)}</div>
+    </div>
+    <div class="p-5">
+      <h4 class="text-lg font-bold mb-2">${h.name}</h4>
+      <div class="flex flex-wrap gap-2 mb-4">${h.am.map(a => `<span class="at">${a}</span>`).join('')}</div>
+      <div class="flex items-center justify-between">
+        <div><span class="text-xl font-bold" style="color:var(--accent)">${fp(h.ppn)}</span><span class="text-xs" style="color:var(--muted)">/night</span></div>
+        <button onclick="addC('hotel','${h.id}')" class="btn-p btn-sm"><i class="fas fa-plus"></i> Add</button>
+      </div>
+    </div>
+  </div>`).join('') + `</div>`
+            }
+            else if (tab === 'foods') {
+                c.innerHTML = `<div class="grid md:grid-cols-2 lg:grid-cols-4 gap-6">` + curDest.foods.map(f => `
+  <div class="rounded-2xl overflow-hidden border card-h" style="background:var(--card);border-color:var(--border)">
+    <div class="relative h-40 overflow-hidden"><img src="${f.img}" alt="${f.name}" class="w-full h-full object-cover" loading="lazy"></div>
+    <div class="p-4">
+      <h4 class="font-bold mb-1">${f.name}</h4>
+      <p class="text-xs mb-3 leading-relaxed" style="color:var(--fg2)">${f.d}</p>
+      <div class="flex items-center justify-between">
+        <span class="font-bold" style="color:var(--accent)">${fp(f.p)}</span>
+        <button onclick="addC('food','${f.id}')" class="btn-p btn-sm"><i class="fas fa-plus"></i> Add</button>
+      </div>
+    </div>
+  </div>`).join('') + `</div>`
+            }
+            else if (tab === 'tours') {
+                c.innerHTML = `<div class="grid md:grid-cols-2 lg:grid-cols-3 gap-6">` + curDest.tours.map(t => `
+  <div class="rounded-2xl overflow-hidden border card-h" style="background:var(--card);border-color:var(--border)">
+    <div class="relative h-48 overflow-hidden">
+      <img src="${t.img}" alt="${t.name}" class="w-full h-full object-cover" loading="lazy">
+      <div class="absolute top-3 left-3 px-3 py-1 rounded-full text-xs font-semibold" style="background:rgba(199,91,57,.9);color:white"><i class="fas fa-clock mr-1"></i>${t.dur}</div>
+    </div>
+    <div class="p-5">
+      <h4 class="text-lg font-bold mb-3">${t.name}</h4>
+      <div class="space-y-1 mb-4">${t.hl.map(h => `<div class="flex items-center gap-2 text-xs" style="color:var(--fg2)"><i class="fas fa-check-circle" style="color:var(--accent);font-size:10px"></i>${h}</div>`).join('')}</div>
+      <div class="flex items-center justify-between">
+        <span class="text-xl font-bold" style="color:var(--accent)">${fp(t.p)}</span>
+        <button onclick="addC('tour','${t.id}')" class="btn-p btn-sm"><i class="fas fa-plus"></i> Add</button>
+      </div>
+    </div>
+  </div>`).join('') + `</div>`
+            }
+        }
+
+        document.getElementById('ci').addEventListener('change', () => { const t = document.querySelector('.tab-b.active')?.dataset.tab || 'hotels'; renderTC(t) });
+        document.getElementById('co').addEventListener('change', () => { const t = document.querySelector('.tab-b.active')?.dataset.tab || 'hotels'; renderTC(t) });
+
+        /* ============ CART ============ */
+        function findIt(type, id) { if (type === 'hotel') return curDest.hotels.find(h => h.id === id); if (type === 'food') return curDest.foods.find(f => f.id === id); if (type === 'tour') return curDest.tours.find(t => t.id === id); return null }
+
+        function addC(type, id) {
+            const it = findIt(type, id); if (!it) return;
+            if (type === 'hotel') { const ex = cart.find(c => c.type === 'hotel'); if (ex) { cart = cart.filter(c => c.type !== 'hotel'); toast('Replaced previous hotel', 'fa-exchange-alt', 'var(--rust)') } }
+            const ex = cart.find(c => c.type === type && c.id === id);
+            if (ex) { if (type === 'food') { ex.qty++; toast('Updated: ' + it.name, 'fa-plus-circle') } else { toast('Already in cart', 'fa-info-circle', 'var(--muted)'); return } }
+            else { cart.push({ type, id: it.id, name: it.name, qty: 1, up: it.ppn || it.p, img: it.img }); toast('Added: ' + it.name, 'fa-check-circle', 'var(--ok)') }
+            updBadge()
+        }
+
+        function rmC(i) { const it = cart[i]; cart.splice(i, 1); toast('Removed: ' + it.name, 'fa-trash', 'var(--err)'); updBadge(); renderCart() }
+        function updQty(i, d) { cart[i].qty = Math.max(1, cart[i].qty + d); renderCart() }
+        function cartTotal() { let t = 0; cart.forEach(i => { t += i.type === 'hotel' ? i.up * gNights() : i.up * i.qty }); return t }
+        function updBadge() { const b = document.getElementById('c-badge'), n = cart.length; n > 0 ? (b.textContent = n, b.classList.remove('hidden')) : b.classList.add('hidden') }
+
+        function togCart() { const o = document.getElementById('c-ov'), p = document.getElementById('c-pn'), open = p.classList.contains('open'); open ? (o.classList.remove('open'), p.classList.remove('open')) : (renderCart(), o.classList.add('open'), p.classList.add('open')) }
+
+        function renderCart() {
+            const it = document.getElementById('c-items'), ft = document.getElementById('c-foot');
+            if (!cart.length) { it.innerHTML = `<div class="flex flex-col items-center justify-center h-full text-center" style="color:var(--muted)"><i class="fas fa-shopping-bag text-4xl mb-4"></i><p class="font-medium mb-1">Your cart is empty</p><p class="text-sm">Browse destinations and add items</p></div>`; ft.innerHTML = ''; return }
+            const n = gNights();
+            it.innerHTML = cart.map((c, i) => {
+                const pr = c.type === 'hotel' ? c.up * n : c.up * c.qty;
+                const lb = c.type === 'hotel' ? fp(c.up) + ' x ' + n + ' nights' : fp(c.up) + ' x ' + c.qty;
+                const ic = c.type === 'hotel' ? 'fa-hotel' : c.type === 'food' ? 'fa-utensils' : 'fa-route';
+                const cl = c.type === 'hotel' ? 'var(--accent)' : c.type === 'food' ? 'var(--rust)' : 'var(--accent)';
+                return `<div class="flex gap-4 mb-5 p-3 rounded-xl" style="background:var(--bg)">
+      <img src="${c.img}" alt="${c.name}" class="w-16 h-16 rounded-lg object-cover flex-shrink-0">
+      <div class="flex-1 min-w-0">
+        <div class="flex items-start justify-between gap-2">
+          <div><div class="flex items-center gap-2 mb-1"><i class="fas ${ic} text-xs" style="color:${cl}"></i><span class="text-xs font-medium uppercase" style="color:${cl}">${c.type}</span></div><h4 class="font-semibold text-sm truncate">${c.name}</h4></div>
+          <button onclick="rmC(${i})" class="flex-shrink-0 w-7 h-7 rounded-md flex items-center justify-center hover:bg-white/10 transition-colors" aria-label="Remove"><i class="fas fa-times text-xs" style="color:var(--muted)"></i></button>
+        </div>
+        <div class="flex items-center justify-between mt-2">
+          <span class="text-xs" style="color:var(--muted)">${lb}</span>
+          <div class="flex items-center gap-2">${c.type === 'food' ? `<button onclick="updQty(${i},-1)" class="qty-b">-</button><span class="text-sm font-medium w-5 text-center">${c.qty}</span><button onclick="updQty(${i},1)" class="qty-b">+</button>` : ''}<span class="font-bold text-sm" style="color:var(--accent)">${fp(pr)}</span></div>
+        </div>
+      </div>
+    </div>`}).join('');
+            ft.innerHTML = `<div class="flex items-center justify-between mb-4"><span class="font-medium" style="color:var(--fg2)">Total Amount</span><span class="text-2xl font-bold" style="color:var(--accent)">${fp(cartTotal())}</span></div>
+  <button onclick="openBk()" class="btn-p w-full justify-center py-4"><i class="fas fa-lock"></i> Proceed to Booking</button>
+  <button onclick="clearCart()" class="w-full text-center text-sm mt-3 py-2 hover:text-[#E74C3C] transition-colors" style="color:var(--muted)">Clear Cart</button>`
+        }
+
+        function clearCart() { cart = []; updBadge(); renderCart(); toast('Cart cleared', 'fa-trash', 'var(--err)') }
+
+        /* ============ BOOKING ============ */
+        function openBk() { if (!cart.length) { toast('Cart is empty', 'fa-exclamation-triangle', 'var(--err)'); return } togCart(); setTimeout(() => { document.getElementById('bk-mod').classList.add('open'); document.getElementById('bk-form').reset() }, 350) }
+        function closeBk() { document.getElementById('bk-mod').classList.remove('open') }
+
+        function handleBk(e) {
+            e.preventDefault(); const er = document.getElementById('bk-err');
+            const nm = document.getElementById('b-name').value.trim(), em = document.getElementById('b-email').value.trim(), ph = document.getElementById('b-phone').value.trim(), idn = document.getElementById('b-id').value.trim(), rq = document.getElementById('b-req').value.trim();
+            if (!nm || !em || !ph || !idn) { er.textContent = 'Please fill all required fields.'; er.classList.remove('hidden'); return false }
+            if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(em)) { er.textContent = 'Please enter a valid email.'; er.classList.remove('hidden'); return false }
+            if (ph.replace(/\D/g, '').length < 10) { er.textContent = 'Please enter a valid phone number.'; er.classList.remove('hidden'); return false }
+            er.classList.add('hidden');
+            bkRef = gRef();
+            bkDet = { ref: bkRef, name: nm, email: em, phone: ph, idNum: idn, req: rq, dest: curDest, ci: document.getElementById('ci').value, co: document.getElementById('co').value, nights: gNights(), trav: gTrav(), cart: JSON.parse(JSON.stringify(cart)), total: cartTotal(), at: new Date().toLocaleString() };
+            closeBk();
+            setTimeout(() => { renderCf(); showV('confirmation'); cart = []; updBadge() }, 400);
+            return false
+        }
+
+        /* ============ CONFIRMATION ============ */
+        function renderCf() {
+            if (!bkDet) return; document.getElementById('cf-ref').textContent = bkDet.ref;
+            let h = `<div class="space-y-4">
+    <div class="flex justify-between items-center pb-3 border-b" style="border-color:var(--border)"><span style="color:var(--muted)">Destination</span><span class="font-semibold">${bkDet.dest.name}, ${bkDet.dest.country}</span></div>
+    <div class="flex justify-between items-center pb-3 border-b" style="border-color:var(--border)"><span style="color:var(--muted)">Traveler</span><span class="font-semibold">${bkDet.name}</span></div>
+    <div class="flex justify-between items-center pb-3 border-b" style="border-color:var(--border)"><span style="color:var(--muted)">Dates</span><span class="font-semibold">${bkDet.ci} to ${bkDet.co} (${bkDet.nights} night${bkDet.nights > 1 ? 's' : ''})</span></div>
+    <div class="flex justify-between items-center pb-3 border-b" style="border-color:var(--border)"><span style="color:var(--muted)">Travelers</span><span class="font-semibold">${bkDet.trav}</span></div>
+    <div class="pt-2"><p class="text-sm font-medium mb-3" style="color:var(--fg2)">Booked Items:</p><div class="space-y-2">`;
+            bkDet.cart.forEach(c => {
+                const pr = c.type === 'hotel' ? c.up * bkDet.nights : c.up * c.qty; const ic = c.type === 'hotel' ? 'fa-hotel' : c.type === 'food' ? 'fa-utensils' : 'fa-route';
+                h += `<div class="flex items-center justify-between text-sm"><div class="flex items-center gap-2"><i class="fas ${ic} text-xs" style="color:var(--accent)"></i><span>${c.name}${c.qty > 1 ? ' x ' + c.qty : ''}${c.type === 'hotel' ? ' x ' + bkDet.nights + ' nights' : ''}</span></div><span class="font-medium">${fp(pr)}</span></div>`
+            });
+            h += `</div></div><div class="flex justify-between items-center pt-4 border-t" style="border-color:var(--border)"><span class="text-lg font-bold">Total Paid</span><span class="text-xl font-bold" style="color:var(--accent)">${fp(bkDet.total)}</span></div></div>`;
+            document.getElementById('cf-sum').innerHTML = h
+        }
+
+        function resetApp() { bkDet = null; curDest = null; showV('destinations') }
+
+        /* ============ PDF GENERATION ============ */
+        function genPDF() {
+            if (!bkDet) return; const { jsPDF } = window.jspdf, doc = new jsPDF('p', 'mm', 'a4'), W = 210, H = 297, M = 15, CW = W - M * 2; let y = 0;
+
+            // Background
+            doc.setFillColor(12, 12, 12); doc.rect(0, 0, W, H, 'F');
+            // Top bar
+            doc.setFillColor(212, 148, 58); doc.rect(0, 0, W, 4, 'F');
+
+            // Header
+            y = 16; doc.setFillColor(26, 26, 26); doc.roundedRect(M, y, CW, 32, 3, 3, 'F');
+            doc.setFillColor(212, 148, 58); doc.roundedRect(M + 5, y + 4, 24, 24, 2, 2, 'F');
+            doc.setTextColor(12, 12, 12); doc.setFontSize(13); doc.setFont('helvetica', 'bold'); doc.text('WL', M + 12, y + 18);
+            doc.setTextColor(240, 237, 232); doc.setFontSize(18); doc.text('WANDERLUST', M + 34, y + 14);
+            doc.setFontSize(8); doc.setFont('helvetica', 'normal'); doc.setTextColor(107, 101, 96); doc.text('Tours & Travels', M + 34, y + 21);
+            doc.setTextColor(212, 148, 58); doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.text('BOOKING REFERENCE', W - M - 55, y + 12);
+            doc.setTextColor(240, 237, 232); doc.setFontSize(14); doc.text(bkDet.ref, W - M - 55, y + 22);
+
+            // Divider
+            y = 54; doc.setDrawColor(42, 39, 36); doc.setLineWidth(.5); doc.line(M, y, W - M, y);
+
+            // Destination
+            y = 62; doc.setFillColor(26, 26, 26); doc.roundedRect(M, y, CW, 28, 3, 3, 'F');
+            doc.setTextColor(212, 148, 58); doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.text('DESTINATION', M + 8, y + 10);
+            doc.setTextColor(240, 237, 232); doc.setFontSize(15); doc.text(bkDet.dest.name + ', ' + bkDet.dest.country, M + 8, y + 21);
+            doc.setTextColor(107, 101, 96); doc.setFontSize(7); doc.setFont('helvetica', 'normal');
+            const ds = bkDet.dest.desc.length > 65 ? bkDet.dest.desc.substring(0, 65) + '...' : bkDet.dest.desc;
+            doc.text(ds, M + 8, y + 26);
+            doc.setTextColor(212, 148, 58); doc.setFontSize(8); doc.setFont('helvetica', 'bold'); doc.text('DATES', W - M - 58, y + 10);
+            doc.setTextColor(240, 237, 232); doc.setFontSize(9); doc.setFont('helvetica', 'normal'); doc.text(bkDet.ci + '  to  ' + bkDet.co, W - M - 58, y + 18);
+            doc.setTextColor(107, 101, 96); doc.setFontSize(8); doc.text(bkDet.nights + ' night' + (bkDet.nights > 1 ? 's' : '') + '  |  ' + bkDet.trav + ' traveler' + (bkDet.trav > 1 ? 's' : ''), W - M - 58, y + 25);
+
+            // Passenger
+            y = 97; doc.setTextColor(212, 148, 58); doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.text('PASSENGER INFORMATION', M, y);
+            y += 7; doc.setFillColor(26, 26, 26); doc.roundedRect(M, y, CW, 22, 3, 3, 'F');
+            doc.setTextColor(107, 101, 96); doc.setFontSize(7); doc.setFont('helvetica', 'normal');
+            doc.text('NAME', M + 8, y + 8); doc.text('EMAIL', M + 72, y + 8); doc.text('PHONE', M + 132, y + 8);
+            doc.setTextColor(240, 237, 232); doc.setFontSize(10); doc.setFont('helvetica', 'bold');
+            const nm = bkDet.name.length > 25 ? bkDet.name.substring(0, 25) + '...' : bkDet.name; doc.text(nm, M + 8, y + 16);
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(9);
+            const em = bkDet.email.length > 22 ? bkDet.email.substring(0, 22) + '...' : bkDet.email; doc.text(em, M + 72, y + 16);
+            doc.text(bkDet.phone, M + 132, y + 16);
+
+            // Items table
+            y = 131; doc.setTextColor(212, 148, 58); doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.text('BOOKED SERVICES', M, y);
+            y += 5; doc.setFillColor(26, 26, 26); doc.rect(M, y, CW, 8, 'F');
+            doc.setTextColor(107, 101, 96); doc.setFontSize(7); doc.setFont('helvetica', 'bold');
+            doc.text('SERVICE', M + 5, y + 5.5); doc.text('TYPE', M + 78, y + 5.5); doc.text('DETAILS', M + 105, y + 5.5); doc.text('AMOUNT', W - M - 35, y + 5.5);
+            y += 10;
+            bkDet.cart.forEach((c, i) => {
+                const pr = c.type === 'hotel' ? c.up * bkDet.nights : c.up * c.qty;
+                const dt = c.type === 'hotel' ? bkDet.nights + ' nights' : c.qty > 1 ? 'Qty: ' + c.qty : '1 unit';
+                if (i % 2 === 0) { doc.setFillColor(20, 20, 20); doc.rect(M, y - 3, CW, 10, 'F') }
+                doc.setTextColor(240, 237, 232); doc.setFontSize(9); doc.setFont('helvetica', 'normal');
+                const cn = c.name.length > 33 ? c.name.substring(0, 33) + '...' : c.name; doc.text(cn, M + 5, y + 4);
+                doc.setTextColor(212, 148, 58); doc.setFontSize(8); doc.text(c.type.toUpperCase(), M + 78, y + 4);
+                doc.setTextColor(107, 101, 96); doc.setFontSize(8); doc.text(dt, M + 105, y + 4);
+                doc.setTextColor(240, 237, 232); doc.setFontSize(9); doc.setFont('helvetica', 'bold'); doc.text('Rs.' + pr.toLocaleString('en-IN'), W - M - 35, y + 4);
+                y += 11
+            });
+
+            // Total
+            y += 2; doc.setDrawColor(212, 148, 58); doc.setLineWidth(.8); doc.line(M, y, W - M, y);
+            y += 8; doc.setFillColor(212, 148, 58); doc.roundedRect(M, y, CW, 14, 3, 3, 'F');
+            doc.setTextColor(12, 12, 12); doc.setFontSize(10); doc.setFont('helvetica', 'bold'); doc.text('TOTAL AMOUNT', M + 8, y + 9);
+            doc.setFontSize(14); doc.text('Rs.' + bkDet.total.toLocaleString('en-IN'), W - M - 8, y + 9, { align: 'right' });
+
+            // Tear line
+            y += 24; doc.setDrawColor(60, 56, 52); doc.setLineWidth(.3); doc.setLineDashPattern([2, 2], 0); doc.line(M, y, W - M, y); doc.setLineDashPattern([], 0);
+            doc.setFillColor(12, 12, 12); doc.circle(M, y, 3, 'F'); doc.circle(W - M, y, 3, 'F');
+
+            // Terms
+            y += 10; doc.setTextColor(107, 101, 96); doc.setFontSize(7); doc.setFont('helvetica', 'normal');
+            ['This is a confirmed booking receipt. Please present this ticket at the check-in counter.', 'Cancellation: Free up to 48 hours before check-in. 50% refund within 24 hours.', 'For support: support@wanderlust.travel | +91 1800 123 4567', 'Booked: ' + bkDet.at + ' | ID: ' + bkDet.idNum].forEach(t => { const l = doc.splitTextToSize(t, CW - 10); doc.text(l, M + 5, y); y += l.length * 3.5 + 1 });
+
+            // Bottom bar
+            doc.setFillColor(212, 148, 58); doc.rect(0, H - 4, W, 4, 'F');
+
+            // Barcode decoration
+            y = H - 20; doc.setFillColor(107, 101, 96); let bx = W - M - 50;
+            for (let i = 0; i < 30; i++) { const bw = Math.random() > .5 ? 1 : .5, bh = 8 + Math.random() * 4; doc.rect(bx, y - bh, bw, bh, 'F'); bx += 1.5 + Math.random() }
+
+            doc.save('Wanderlust-Ticket-' + bkDet.ref + '.pdf');
+            toast('Ticket PDF downloaded!', 'fa-file-pdf', 'var(--ok)')
+        }
+
+        /* ============ HERO PARTICLES ============ */
+        function initPart() {
+            const cv = document.getElementById('hero-canvas'), cx = cv.getContext('2d'); let ps = []; const N = 55;
+            function rs() { cv.width = cv.parentElement.offsetWidth; cv.height = cv.parentElement.offsetHeight } rs(); window.addEventListener('resize', rs);
+            class P {
+                constructor() { this.rs() } rs() { this.x = Math.random() * cv.width; this.y = cv.height + Math.random() * 100; this.s = Math.random() * 2.5 + .5; this.vy = -(Math.random() * .5 + .15); this.vx = (Math.random() - .5) * .3; this.o = Math.random() * .6 + .2; this.fd = Math.random() * .002 + .001; this.h = Math.random() > .7 ? 20 : 38 }
+                up() { this.y += this.vy; this.x += this.vx + Math.sin(this.y * .01) * .2; this.o -= this.fd; if (this.o <= 0 || this.y < -20) this.rs() }
+                dr() { cx.beginPath(); cx.arc(this.x, this.y, this.s, 0, Math.PI * 2); cx.fillStyle = `hsla(${this.h},75%,55%,${this.o})`; cx.fill(); cx.beginPath(); cx.arc(this.x, this.y, this.s * 3, 0, Math.PI * 2); cx.fillStyle = `hsla(${this.h},75%,55%,${this.o * .15})`; cx.fill() }
+            }
+            for (let i = 0; i < N; i++) { const p = new P(); p.y = Math.random() * cv.height; ps.push(p) }
+            !function anim() { cx.clearRect(0, 0, cv.width, cv.height); ps.forEach(p => { p.up(); p.dr() }); requestAnimationFrame(anim) }()
+        }
+
+        /* ============ INIT ============ */
+        document.addEventListener('DOMContentLoaded', () => { renderDest(); initPart(); setDates() });
+    </script>
+</body>
+
+</html>

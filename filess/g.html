@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>H</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Inter:wght@400;500;600&display=swap');
+
+        :root {
+            --primary: #0f766e;
+        }
+
+        body {
+            font-family: 'Inter', system_ui, sans-serif;
+        }
+
+        .heading-font {
+            font-family: 'Playfair Display', sans-serif;
+        }
+
+        .hero-bg {
+            background-image: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.4)), url('https://picsum.photos/id/1015/2000/1200');
+            background-size: cover;
+            background-position: center;
+        }
+
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card-hover:hover {
+            transform: translateY(-12px);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+
+        .nav-link {
+            position: relative;
+        }
+
+        .nav-link:after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background-color: #0f766e;
+            transition: width 0.3s ease;
+        }
+
+        .nav-link:hover:after {
+            width: 100%;
+        }
+    </style>
+</head>
+
+<body class="bg-zinc-50 text-zinc-800">
+    <!-- NAVBAR -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6 py-5 flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <i class="fa-solid fa-globe text-3xl text-teal-600"></i>
+                <div>
+                    <span class="heading-font text-3xl font-bold tracking-tight">GlobeTrek</span>
+                </div>
+            </div>
+
+            <div class="hidden md:flex items-center gap-8 text-sm font-medium">
+                <a href="#" onclick="navigateTo('home')" class="nav-link cursor-pointer">Home</a>
+                <a href="#" onclick="navigateTo('destinations')" class="nav-link cursor-pointer">Destinations</a>
+                <a href="#" onclick="navigateTo('packages')" class="nav-link cursor-pointer">Packages</a>
+                <a href="#" onclick="navigateTo('hotels')" class="nav-link cursor-pointer">Hotels</a>
+                <a href="#" onclick="navigateTo('food')" class="nav-link cursor-pointer">Dining</a>
+            </div>
+
+            <div class="flex items-center gap-4">
+                <button onclick="toggleCart()"
+                    class="flex items-center gap-2 px-4 py-2 rounded-full hover:bg-zinc-100 transition-colors">
+                    <i class="fa-solid fa-cart-shopping"></i>
+                    <span id="cart-count"
+                        class="text-xs bg-teal-600 text-white w-5 h-5 flex items-center justify-center rounded-full">0</span>
+                </button>
+                <button onclick="showLoginModal()"
+                    class="px-6 py-2.5 bg-zinc-900 text-white rounded-2xl hover:bg-black transition-colors flex items-center gap-2">
+                    <i class="fa-solid fa-user"></i>
+                    <span class="hidden sm:inline">Account</span>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO -->
+    <section id="home" class="hero-bg h-screen flex items-center text-white">
+        <div class="max-w-4xl mx-auto px-6 text-center">
+            <h1 class="heading-font text-6xl md:text-7xl font-bold mb-6 leading-tight">
+                Your Journey,<br>Our Expertise
+            </h1>
+            <p class="text-xl md:text-2xl mb-10 max-w-lg mx-auto opacity-90">
+                Book unforgettable experiences, hotels, and local delicacies across the globe
+            </p>
+
+            <div class="bg-white rounded-3xl p-2 shadow-2xl max-w-2xl mx-auto">
+                <div class="grid grid-cols-3 gap-2">
+                    <div onclick="navigateTo('destinations')"
+                        class="bg-zinc-100 hover:bg-white cursor-pointer rounded-2xl p-6 text-center transition-all">
+                        <i class="fa-solid fa-map-marker-alt text-3xl text-teal-600 mb-3"></i>
+                        <p class="font-semibold text-zinc-800">Destinations</p>
+                    </div>
+                    <div onclick="navigateTo('packages')"
+                        class="bg-zinc-100 hover:bg-white cursor-pointer rounded-2xl p-6 text-center transition-all">
+                        <i class="fa-solid fa-suitcase text-3xl text-teal-600 mb-3"></i>
+                        <p class="font-semibold text-zinc-800">Packages</p>
+                    </div>
+                    <div onclick="showQuickBookModal()"
+                        class="bg-teal-600 hover:bg-teal-700 cursor-pointer rounded-2xl p-6 text-center transition-all">
+                        <i class="fa-solid fa-bolt text-3xl text-white mb-3"></i>
+                        <p class="font-semibold text-white">Book Now</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- DESTINATIONS -->
+    <section id="destinations" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex justify-between items-end mb-12">
+                <div>
+                    <span class="uppercase tracking-widest text-teal-600 text-sm font-medium">Explore the World</span>
+                    <h2 class="heading-font text-5xl font-bold">Popular Destinations</h2>
+                </div>
+                <button onclick="navigateTo('packages')"
+                    class="text-teal-600 hover:text-teal-700 font-medium flex items-center gap-2">
+                    View all <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8" id="destinations-grid">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- PACKAGES -->
+    <section id="packages" class="py-20 bg-zinc-100">
+        <div class="max-w-7xl mx-auto px-6">
+            <h2 class="heading-font text-5xl font-bold text-center mb-4">Tour Packages</h2>
+            <p class="text-center text-zinc-600 mb-12 max-w-md mx-auto">
+                Curated experiences for every kind of traveler
+            </p>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8" id="packages-grid">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- QUICK BOOK MODAL -->
+    <div id="quickBookModal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-[100]">
+        <div class="bg-white rounded-3xl max-w-lg w-full mx-4 max-h-[90vh] overflow-auto">
+            <div class="p-8">
+                <div class="flex justify-between items-center mb-8">
+                    <h3 class="text-3xl heading-font font-bold">Book Your Trip</h3>
+                    <button onclick="hideQuickBookModal()" class="text-3xl leading-none hover:text-red-500">×</button>
+                </div>
+
+                <form id="bookingForm" onsubmit="handleBooking(event)">
+                    <div class="space-y-6">
+                        <!-- Destination -->
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Destination</label>
+                            <select id="destination"
+                                class="w-full px-5 py-4 border border-zinc-300 rounded-2xl focus:outline-none focus:border-teal-600"
+                                required>
+                                <option value="">Select destination</option>
+                            </select>
+                        </div>
+
+                        <!-- Type -->
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Booking Type</label>
+                            <div class="grid grid-cols-3 gap-3">
+                                <button type="button" onclick="selectType(this, 'package')"
+                                    class="type-btn border-2 border-transparent py-6 rounded-2xl hover:border-teal-200 transition-all active:scale-95">
+                                    <i class="fa-solid fa-suitcase text-2xl mb-2 block"></i>
+                                    <span class="text-sm font-medium">Package</span>
+                                </button>
+                                <button type="button" onclick="selectType(this, 'hotel')"
+                                    class="type-btn border-2 border-transparent py-6 rounded-2xl hover:border-teal-200 transition-all active:scale-95">
+                                    <i class="fa-solid fa-hotel text-2xl mb-2 block"></i>
+                                    <span class="text-sm font-medium">Hotel</span>
+                                </button>
+                                <button type="button" onclick="selectType(this, 'food')"
+                                    class="type-btn border-2 border-transparent py-6 rounded-2xl hover:border-teal-200 transition-all active:scale-95">
+                                    <i class="fa-solid fa-utensils text-2xl mb-2 block"></i>
+                                    <span class="text-sm font-medium">Dining</span>
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="grid grid-cols-2 gap-6">
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Date</label>
+                                <input type="date" id="travelDate"
+                                    class="w-full px-5 py-4 border border-zinc-300 rounded-2xl focus:outline-none focus:border-teal-600"
+                                    required>
+                            </div>
+                            <div>
+                                <label class="block text-sm font-medium mb-2">Travelers</label>
+                                <input type="number" id="travelers" value="2" min="1"
+                                    class="w-full px-5 py-4 border border-zinc-300 rounded-2xl focus:outline-none focus:border-teal-600"
+                                    required>
+                            </div>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Special Requests (optional)</label>
+                            <textarea id="specialRequests" rows="3"
+                                class="w-full px-5 py-4 border border-zinc-300 rounded-3xl focus:outline-none focus:border-teal-600 resize-none"
+                                placeholder="E.g., vegetarian meals, airport pickup..."></textarea>
+                        </div>
+                    </div>
+
+                    <button type="submit"
+                        class="mt-10 w-full bg-teal-600 hover:bg-teal-700 transition-colors text-white py-6 rounded-3xl text-lg font-semibold flex items-center justify-center gap-3">
+                        <span>Confirm Booking • ₹</span>
+                        <span id="dynamicPrice">24999</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- SUCCESS MODAL -->
+    <div id="successModal" class="hidden fixed inset-0 bg-black/70 flex items-center justify-center z-[200]">
+        <div class="bg-white rounded-3xl p-10 max-w-md w-full mx-4 text-center">
+            <div class="w-20 h-20 mx-auto bg-green-100 rounded-full flex items-center justify-center mb-6">
+                <i class="fa-solid fa-check text-5xl text-green-600"></i>
+            </div>
+            <h3 class="text-3xl font-bold mb-2">Booking Confirmed!</h3>
+            <p class="text-zinc-600 mb-8" id="bookingRef"></p>
+
+            <button onclick="generateTicketPDF()"
+                class="w-full py-5 bg-zinc-900 hover:bg-black text-white rounded-2xl flex items-center justify-center gap-3 mb-4">
+                <i class="fa-solid fa-download"></i>
+                Download Ticket (PDF)
+            </button>
+
+            <button onclick="hideSuccessModal()" class="w-full py-5 text-zinc-500 hover:bg-zinc-100 rounded-2xl">
+                Back to Home
+            </button>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="bg-zinc-900 text-white py-16">
+        <div class="max-w-7xl mx-auto px-6 grid grid-cols-2 md:grid-cols-4 gap-10">
+            <div>
+                <div class="flex items-center gap-3 mb-6">
+                    <i class="fa-solid fa-globe text-4xl text-teal-400"></i>
+                    <span class="heading-font text-3xl font-bold">GlobeTrek</span>
+                </div>
+                <p class="text-zinc-400">Making travel dreams come true since 2018.</p>
+            </div>
+            <div>
+                <h4 class="font-semibold mb-5">Company</h4>
+                <ul class="space-y-3 text-sm text-zinc-400">
+                    <li><a href="#" class="hover:text-white">About Us</a></li>
+                    <li><a href="#" class="hover:text-white">Careers</a></li>
+                    <li><a href="#" class="hover:text-white">Blog</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-semibold mb-5">Support</h4>
+                <ul class="space-y-3 text-sm text-zinc-400">
+                    <li><a href="#" class="hover:text-white">Contact</a></li>
+                    <li><a href="#" class="hover:text-white">FAQs</a></li>
+                    <li><a href="#" class="hover:text-white">Travel Safety</a></li>
+                </ul>
+            </div>
+            <div>
+                <h4 class="font-semibold mb-5">Follow Us</h4>
+                <div class="flex gap-5 text-2xl">
+                    <i class="fa-brands fa-instagram hover:text-teal-400 cursor-pointer"></i>
+                    <i class="fa-brands fa-twitter hover:text-teal-400 cursor-pointer"></i>
+                    <i class="fa-brands fa-facebook hover:text-teal-400 cursor-pointer"></i>
+                </div>
+            </div>
+        </div>
+        <div class="text-center text-xs text-zinc-500 mt-16">
+            © 2026 GlobeTrek. Demo website for demonstration purposes only.
+        </div>
+    </footer>
+
+    <script>
+        // Tailwind script already included
+
+        let currentBooking = {};
+        let cart = [];
+
+        const destinations = [
+            { id: 1, name: "Bali, Indonesia", price: 89999, img: "https://picsum.photos/id/1015/600/400" },
+            { id: 2, name: "Paris, France", price: 149999, img: "https://picsum.photos/id/201/600/400" },
+            { id: 3, name: "Kyoto, Japan", price: 119999, img: "https://picsum.photos/id/251/600/400" },
+            { id: 4, name: "Marrakech, Morocco", price: 79999, img: "https://picsum.photos/id/301/600/400" }
+        ];
+
+        const packages = [
+            {
+                id: 101,
+                title: "Romantic Bali Escape",
+                duration: "7 Days",
+                price: 89999,
+                desc: "Beach resorts, rice terraces & sunset dinners"
+            },
+            {
+                id: 102,
+                title: "Tokyo Adventure",
+                duration: "6 Days",
+                price: 129999,
+                desc: "Mount Fuji, Shibuya & traditional ryokan"
+            },
+            {
+                id: 103,
+                title: "Moroccan Odyssey",
+                duration: "8 Days",
+                price: 99999,
+                desc: "Desert camps, medinas & Atlas Mountains"
+            }
+        ];
+
+        function populateDestinations() {
+            const grid = document.getElementById('destinations-grid');
+            grid.innerHTML = '';
+
+            destinations.forEach(dest => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-3xl overflow-hidden card-hover cursor-pointer';
+                card.innerHTML = `
+                    <img src="${dest.img}" class="w-full h-56 object-cover">
+                    <div class="p-6">
+                        <h3 class="font-semibold text-xl">${dest.name}</h3>
+                        <p class="text-teal-600 font-medium mt-1">From ₹${dest.price.toLocaleString('en-IN')}</p>
+                        <button onclick="quickBookFor('${dest.name}')" 
+                                class="mt-6 w-full py-3.5 bg-zinc-900 text-white rounded-2xl text-sm font-medium hover:bg-black">
+                            Explore
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function populatePackages() {
+            const grid = document.getElementById('packages-grid');
+            grid.innerHTML = '';
+
+            packages.forEach(pkg => {
+                const card = document.createElement('div');
+                card.className = 'bg-white rounded-3xl p-8 card-hover';
+                card.innerHTML = `
+                    <div class="h-2 w-12 bg-teal-600 rounded-full mb-6"></div>
+                    <h3 class="font-semibold text-2xl mb-1">${pkg.title}</h3>
+                    <p class="text-teal-600">${pkg.duration}</p>
+                    <p class="mt-6 text-zinc-600">${pkg.desc}</p>
+                    <div class="mt-8 flex items-end justify-between">
+                        <div>
+                            <span class="text-xs uppercase tracking-widest">Starting at</span>
+                            <p class="text-3xl font-semibold">₹${pkg.price.toLocaleString('en-IN')}</p>
+                        </div>
+                        <button onclick="quickBookForPackage(${pkg.id})" 
+                                class="px-8 py-4 bg-teal-600 text-white rounded-2xl hover:bg-teal-700">
+                            Book
+                        </button>
+                    </div>
+                `;
+                grid.appendChild(card);
+            });
+        }
+
+        function populateDestinationSelect() {
+            const select = document.getElementById('destination');
+            destinations.forEach(dest => {
+                const option = document.createElement('option');
+                option.value = dest.name;
+                option.textContent = dest.name;
+                select.appendChild(option);
+            });
+        }
+
+        let selectedType = 'package';
+
+        function selectType(btn, type) {
+            document.querySelectorAll('.type-btn').forEach(b => {
+                b.classList.remove('border-teal-600', 'bg-teal-50');
+            });
+            btn.classList.add('border-teal-600', 'bg-teal-50');
+            selectedType = type;
+        }
+
+        function showQuickBookModal() {
+            document.getElementById('quickBookModal').classList.remove('hidden');
+            document.getElementById('quickBookModal').classList.add('flex');
+            populateDestinationSelect();
+
+            // Default type button
+            const firstBtn = document.querySelector('.type-btn');
+            if (firstBtn) selectType(firstBtn, 'package');
+        }
+
+        function hideQuickBookModal() {
+            const modal = document.getElementById('quickBookModal');
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+        }
+
+        function handleBooking(e) {
+            e.preventDefault();
+
+            const destination = document.getElementById('destination').value;
+            const date = document.getElementById('travelDate').value;
+            const travelers = parseInt(document.getElementById('travelers').value);
+
+            if (!destination || !date) return;
+
+            currentBooking = {
+                ref: 'GT' + Math.floor(100000 + Math.random() * 900000),
+                destination: destination,
+                type: selectedType,
+                date: date,
+                travelers: travelers,
+                price: Math.floor(Math.random() * 80000) + 25000,
+                requests: document.getElementById('specialRequests').value
+            };
+
+            hideQuickBookModal();
+            showSuccessModal();
+        }
+
+        function showSuccessModal() {
+            document.getElementById('bookingRef').textContent = `Booking Reference: ${currentBooking.ref}`;
+            document.getElementById('successModal').classList.remove('hidden');
+            document.getElementById('successModal').classList.add('flex');
+        }
+
+        function hideSuccessModal() {
+            document.getElementById('successModal').classList.add('hidden');
+            document.getElementById('successModal').classList.remove('flex');
+        }
+
+        function generateTicketPDF() {
+            if (!currentBooking.ref) return;
+
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Header
+            doc.setFillColor(15, 118, 110);
+            doc.rect(0, 0, 210, 40, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(22);
+            doc.text("GLOBETREK", 105, 18, { align: "center" });
+            doc.setFontSize(11);
+            doc.text("Your Journey • Our Promise", 105, 27, { align: "center" });
+
+            // Content
+            doc.setTextColor(0, 0, 0);
+            doc.setFontSize(16);
+            doc.text("TRAVEL CONFIRMATION", 20, 55);
+
+            doc.setFontSize(11);
+            doc.text(`Booking ID: ${currentBooking.ref}`, 20, 68);
+            doc.text(`Date: ${new Date().toLocaleDateString('en-IN')}`, 20, 76);
+
+            doc.text("TRIP DETAILS", 20, 95);
+            doc.text(`Destination: ${currentBooking.destination}`, 20, 105);
+            doc.text(`Type: ${currentBooking.type.toUpperCase()}`, 20, 113);
+            doc.text(`Travel Date: ${currentBooking.date}`, 20, 121);
+            doc.text(`Travelers: ${currentBooking.travelers}`, 20, 129);
+
+            if (currentBooking.requests) {
+                doc.text("Special Requests:", 20, 145);
+                doc.text(currentBooking.requests.substring(0, 80), 20, 153);
+            }
+
+            // Price
+            doc.setFontSize(14);
+            doc.text(`Total Amount: ₹${currentBooking.price.toLocaleString('en-IN')}`, 20, 175);
+
+            // Footer message
+            doc.setFontSize(10);
+            doc.text("Thank you for choosing GlobeTrek!", 105, 240, { align: "center" });
+            doc.text("This is a computer generated document.", 105, 248, { align: "center" });
+
+            // Save
+            doc.save(`GlobeTrek_Ticket_${currentBooking.ref}.pdf`);
+
+            // Add to cart simulation
+            cart.push(currentBooking);
+            updateCartCount();
+        }
+
+        function quickBookFor(destName) {
+            document.getElementById('destination').value = destName;
+            showQuickBookModal();
+        }
+
+        function quickBookForPackage(id) {
+            const pkg = packages.find(p => p.id === id);
+            if (pkg) {
+                document.getElementById('destination').value = "Custom Package";
+                showQuickBookModal();
+            }
+        }
+
+        function updateCartCount() {
+            document.getElementById('cart-count').textContent = cart.length;
+        }
+
+        function toggleCart() {
+            if (cart.length === 0) {
+                alert("Your cart is empty! Book some amazing trips first.");
+                return;
+            }
+            let msg = "Your Bookings:\n\n";
+            cart.forEach((item, i) => {
+                msg += `${i + 1}. ${item.destination} - ${item.type} (${item.ref})\n`;
+            });
+            alert(msg);
+        }
+
+        function navigateTo(section) {
+            document.getElementById(section).scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function showLoginModal() {
+            alert("Welcome back!\n\nDemo Login:\nEmail: traveler@globetrek.com\nPassword: explore2026");
+        }
+
+        // Initialize everything
+        window.onload = function () {
+            populateDestinations();
+            populatePackages();
+            updateCartCount();
+
+            // Set default date to 10 days from now
+            const dateInput = document.getElementById('travelDate');
+            const futureDate = new Date();
+            futureDate.setDate(futureDate.getDate() + 10);
+            dateInput.value = futureDate.toISOString().split('T')[0];
+
+            // Keyboard escape support
+            document.addEventListener('keydown', function (e) {
+                if (e.key === "Escape") {
+                    const quickModal = document.getElementById('quickBookModal');
+                    const successModal = document.getElementById('successModal');
+                    if (!quickModal.classList.contains('hidden')) hideQuickBookModal();
+                    else if (!successModal.classList.contains('hidden')) hideSuccessModal();
+                }
+            });
+
+            console.log('%cGlobeTrek Demo Loaded Successfully!', 'color:#0f766e; font-size:14px; font-family:monospace');
+        };
+    </script>
+</body>
+
+</html>

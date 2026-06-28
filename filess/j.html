@@ -1,0 +1,1393 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>J</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        :root {
+            --teal: #0d9488;
+            --indigo: #4f46e5;
+            --teal-light: #ccfbf1;
+            --bg: #f8fafc;
+            --text: #0f172a;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --radius: 16px;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, .07), 0 4px 10px -4px rgba(0, 0, 0, .05);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0
+        }
+
+        html,
+        body {
+            height: 100%
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell, "Helvetica Neue", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px
+        }
+
+        header {
+            background: linear-gradient(135deg, var(--teal) 0%, var(--indigo) 100%);
+            color: #fff;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            box-shadow: 0 4px 20px rgba(79, 70, 229, .15)
+        }
+
+        .nav {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 0
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 800;
+            font-size: 22px;
+            letter-spacing: -.3px;
+            cursor: pointer
+        }
+
+        .logo span {
+            font-size: 26px;
+            filter: drop-shadow(0 2px 4px rgba(0, 0, 0, .2))
+        }
+
+        .nav button {
+            background: rgba(255, 255, 255, .15);
+            border: 1px solid rgba(255, 255, 255, .25);
+            color: #fff;
+            padding: 9px 16px;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            backdrop-filter: blur(10px);
+            transition: .2s
+        }
+
+        .nav button:hover {
+            background: rgba(255, 255, 255, .25)
+        }
+
+        #hero {
+            padding: 70px 0 50px;
+            background: radial-gradient(1200px 600px at 50% -100px, rgba(79, 70, 229, .12), transparent), linear-gradient(#fff, #f8fafc)
+        }
+
+        #hero h1 {
+            font-size: clamp(32px, 5vw, 52px);
+            font-weight: 800;
+            letter-spacing: -1px;
+            text-align: center;
+            background: linear-gradient(135deg, var(--teal), var(--indigo));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 12px
+        }
+
+        #hero p {
+            text-align: center;
+            color: var(--muted);
+            font-size: 18px;
+            margin-bottom: 36px
+        }
+
+        .search-card {
+            background: #fff;
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+            display: grid;
+            grid-template-columns: 1.3fr 1fr 1fr .8fr auto;
+            gap: 16px;
+            align-items: end;
+            border: 1px solid var(--border)
+        }
+
+        @media(max-width:900px) {
+            .search-card {
+                grid-template-columns: 1fr 1fr
+            }
+
+            .search-card button {
+                grid-column: 1/-1
+            }
+        }
+
+        @media(max-width:560px) {
+            .search-card {
+                grid-template-columns: 1fr
+            }
+        }
+
+        .field label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: var(--muted);
+            text-transform: uppercase;
+            letter-spacing: .5px;
+            margin-bottom: 6px
+        }
+
+        .field select,
+        .field input {
+            width: 100%;
+            padding: 12px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: 12px;
+            font-size: 15px;
+            background: #fff;
+            transition: .2s;
+            outline: none
+        }
+
+        .field select:focus,
+        .field input:focus {
+            border-color: var(--teal);
+            box-shadow: 0 0 0 3px rgba(13, 148, 136, .15)
+        }
+
+        .search-card button {
+            background: linear-gradient(135deg, var(--teal), var(--indigo));
+            color: #fff;
+            border: none;
+            padding: 13px 28px;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 15px;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(79, 70, 229, .25);
+            transition: .2s;
+            height: 46px
+        }
+
+        .search-card button:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 12px 24px rgba(79, 70, 229, .3)
+        }
+
+        #results {
+            padding: 40px 0 120px
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: 1fr 360px;
+            gap: 28px;
+            align-items: start
+        }
+
+        @media(max-width:1024px) {
+            .results-grid {
+                grid-template-columns: 1fr
+            }
+        }
+
+        .main-panel {
+            background: #fff;
+            border-radius: 24px;
+            padding: 24px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border)
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 12px
+        }
+
+        .trip-meta {
+            font-size: 14px;
+            color: var(--muted)
+        }
+
+        .trip-meta strong {
+            color: var(--text)
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px
+        }
+
+        .link-btn {
+            background: #f1f5f9;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            color: var(--muted);
+            cursor: pointer
+        }
+
+        .link-btn:hover {
+            background: #e2e8f0
+        }
+
+        .tabs {
+            display: flex;
+            background: #f1f5f9;
+            padding: 4px;
+            border-radius: 14px;
+            margin-bottom: 24px;
+            gap: 4px
+        }
+
+        .tab-btn {
+            flex: 1;
+            padding: 10px;
+            border: none;
+            background: transparent;
+            border-radius: 10px;
+            font-weight: 600;
+            color: var(--muted);
+            cursor: pointer;
+            transition: .2s;
+            font-size: 14px
+        }
+
+        .tab-btn.active {
+            background: #fff;
+            color: var(--teal);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, .06)
+        }
+
+        .tab-content.hidden {
+            display: none
+        }
+
+        .hotels-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+            gap: 18px
+        }
+
+        .hotel-card {
+            border: 1.5px solid var(--border);
+            border-radius: 16px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: .2s;
+            background: #fff
+        }
+
+        .hotel-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+            border-color: #cbd5e1
+        }
+
+        .hotel-card.selected {
+            border-color: var(--teal);
+            box-shadow: 0 0 0 3px rgba(13, 148, 136, .15)
+        }
+
+        .hotel-card img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            display: block
+        }
+
+        .hotel-body {
+            padding: 14px
+        }
+
+        .hotel-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: start;
+            margin-bottom: 6px
+        }
+
+        .hotel-name {
+            font-weight: 700;
+            font-size: 16px;
+            line-height: 1.3
+        }
+
+        .hotel-price {
+            font-weight: 800;
+            color: var(--teal);
+            white-space: nowrap;
+            margin-left: 8px
+        }
+
+        .hotel-rating {
+            color: #f59e0b;
+            font-size: 13px;
+            margin-bottom: 8px
+        }
+
+        .hotel-amenities {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px
+        }
+
+        .amenity {
+            background: #f8fafc;
+            border: 1px solid var(--border);
+            padding: 3px 8px;
+            border-radius: 999px;
+            font-size: 11px;
+            color: var(--muted);
+            font-weight: 500
+        }
+
+        .food-grid {
+            display: grid;
+            gap: 12px
+        }
+
+        .food-option {
+            position: relative
+        }
+
+        .food-option input {
+            position: absolute;
+            opacity: 0
+        }
+
+        .food-option label {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            border: 1.5px solid var(--border);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: .2s;
+            background: #fff
+        }
+
+        .food-option label:hover {
+            border-color: #cbd5e1
+        }
+
+        .food-option input:checked+label {
+            border-color: var(--teal);
+            background: #f0fdfa;
+            box-shadow: 0 0 0 3px rgba(13, 148, 136, .1)
+        }
+
+        .food-info strong {
+            display: block;
+            font-weight: 700;
+            margin-bottom: 2px
+        }
+
+        .food-info span {
+            font-size: 13px;
+            color: var(--muted)
+        }
+
+        .food-price {
+            font-weight: 800;
+            color: var(--teal)
+        }
+
+        .tours-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 14px
+        }
+
+        .tour-card {
+            border: 1.5px solid var(--border);
+            border-radius: 16px;
+            padding: 18px;
+            cursor: pointer;
+            transition: .2s;
+            background: #fff;
+            text-align: center
+        }
+
+        .tour-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow)
+        }
+
+        .tour-card.selected {
+            border-color: var(--teal);
+            background: #f0fdfa;
+            box-shadow: 0 0 0 3px rgba(13, 148, 136, .1)
+        }
+
+        .tour-icon {
+            font-size: 28px;
+            margin-bottom: 8px
+        }
+
+        .tour-name {
+            font-weight: 700;
+            margin-bottom: 4px
+        }
+
+        .tour-desc {
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 10px;
+            min-height: 36px
+        }
+
+        .tour-price {
+            font-weight: 800;
+            color: var(--indigo)
+        }
+
+        .passenger-form {
+            margin-top: 32px;
+            padding-top: 24px;
+            border-top: 1px dashed var(--border)
+        }
+
+        .passenger-form h3 {
+            font-size: 18px;
+            margin-bottom: 16px
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 14px
+        }
+
+        @media(max-width:640px) {
+            .form-grid {
+                grid-template-columns: 1fr
+            }
+        }
+
+        .form-field label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            color: #334155
+        }
+
+        .form-field input,
+        .form-field select {
+            width: 100%;
+            padding: 11px 13px;
+            border: 1.5px solid var(--border);
+            border-radius: 11px;
+            font-size: 14px;
+            outline: none;
+            transition: .2s;
+            background: #fff
+        }
+
+        .form-field input:focus,
+        .form-field select:focus {
+            border-color: var(--teal);
+            box-shadow: 0 0 0 3px rgba(13, 148, 136, .12)
+        }
+
+        .phone-wrap {
+            display: flex
+        }
+
+        .phone-wrap span {
+            padding: 11px 10px;
+            background: #f1f5f9;
+            border: 1.5px solid var(--border);
+            border-right: none;
+            border-radius: 11px 0 0 11px;
+            font-size: 14px;
+            color: var(--muted)
+        }
+
+        .phone-wrap input {
+            border-radius: 0 11px 11px 0
+        }
+
+        .error {
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, .12) !important
+        }
+
+        #summary {
+            background: #fff;
+            border-radius: 24px;
+            padding: 22px;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+            position: sticky;
+            top: 90px
+        }
+
+        .summary-title {
+            font-weight: 800;
+            font-size: 18px;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 10px 0;
+            font-size: 14px
+        }
+
+        .summary-row.total {
+            border-top: 2px dashed var(--border);
+            padding-top: 12px;
+            margin-top: 14px;
+            font-weight: 800;
+            font-size: 17px
+        }
+
+        .summary-row.total span:last-child {
+            color: var(--teal)
+        }
+
+        .muted {
+            color: var(--muted);
+            font-size: 13px
+        }
+
+        .confirm-btn {
+            width: 100%;
+            margin-top: 16px;
+            background: linear-gradient(135deg, var(--teal), var(--indigo));
+            color: #fff;
+            border: none;
+            padding: 14px;
+            border-radius: 14px;
+            font-weight: 800;
+            font-size: 15px;
+            cursor: pointer;
+            box-shadow: 0 10px 24px rgba(79, 70, 229, .28);
+            transition: .2s
+        }
+
+        .confirm-btn:hover:not(:disabled) {
+            transform: translateY(-1px);
+            box-shadow: 0 14px 28px rgba(79, 70, 229, .32)
+        }
+
+        .confirm-btn:disabled {
+            opacity: .55;
+            cursor: not-allowed;
+            box-shadow: none
+        }
+
+        @media(max-width:1024px) {
+            #summary {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                border-radius: 24px 24px 0 0;
+                padding: 14px 18px 18px;
+                z-index: 40;
+                transform: translateY(calc(100% - 66px));
+                transition: .35s cubic-bezier(.2, .8, .2, 1);
+                max-height: 85vh;
+                overflow: auto;
+                box-shadow: 0 -10px 30px rgba(0, 0, 0, .12)
+            }
+
+            #summary.open {
+                transform: translateY(0)
+            }
+
+            .summary-handle {
+                display: flex;
+                justify-content: center;
+                padding: 6px 0 10px;
+                cursor: pointer
+            }
+
+            .summary-handle span {
+                width: 44px;
+                height: 5px;
+                background: #cbd5e1;
+                border-radius: 99px
+            }
+
+            .summary-header-mobile {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 4px
+            }
+
+            .summary-header-mobile strong {
+                font-size: 16px
+            }
+        }
+
+        .summary-handle,
+        .summary-header-mobile {
+            display: none
+        }
+
+        @media(max-width:1024px) {
+
+            .summary-handle,
+            .summary-header-mobile {
+                display: flex
+            }
+
+            .summary-title {
+                display: none
+            }
+        }
+
+        #myBookingsSection {
+            padding: 50px 0 80px;
+            min-height: 60vh
+        }
+
+        .section-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px
+        }
+
+        .bookings-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 18px;
+            margin-top: 24px
+        }
+
+        .booking-card {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 18px;
+            padding: 18px;
+            box-shadow: var(--shadow)
+        }
+
+        .booking-card h4 {
+            font-size: 16px;
+            margin-bottom: 6px
+        }
+
+        .booking-meta {
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 12px
+        }
+
+        .booking-actions {
+            display: flex;
+            gap: 8px
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--muted);
+            background: #fff;
+            border-radius: 24px;
+            border: 1px dashed var(--border);
+            margin-top: 24px
+        }
+
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(15, 23, 42, .55);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 100;
+            padding: 20px
+        }
+
+        .modal {
+            background: #fff;
+            border-radius: 24px;
+            max-width: 480px;
+            width: 100%;
+            padding: 32px;
+            text-align: center;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, .25);
+            animation: pop .3s ease-out
+        }
+
+        @keyframes pop {
+            from {
+                transform: scale(.95);
+                opacity: 0
+            }
+
+            to {
+                transform: scale(1);
+                opacity: 1
+            }
+        }
+
+        .success-icon {
+            width: 72px;
+            height: 72px;
+            margin: 0 auto 16px;
+            background: linear-gradient(135deg, var(--teal), var(--indigo));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 36px;
+            box-shadow: 0 10px 20px rgba(13, 148, 136, .3)
+        }
+
+        .modal h2 {
+            font-size: 24px;
+            margin-bottom: 8px
+        }
+
+        .modal p {
+            color: var(--muted);
+            margin-bottom: 20px
+        }
+
+        .modal .code {
+            background: #f1f5f9;
+            display: inline-block;
+            padding: 8px 14px;
+            border-radius: 10px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            margin-bottom: 20px;
+            font-family: ui-monospace, monospace
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--teal), var(--indigo));
+            color: #fff;
+            border: none;
+            padding: 11px 18px;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer
+        }
+
+        .btn-secondary {
+            background: #f1f5f9;
+            color: #334155;
+            border: none;
+            padding: 11px 18px;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer
+        }
+
+        footer {
+            background: #0f172a;
+            color: #94a3b8;
+            padding: 40px 0;
+            margin-top: 60px;
+            font-size: 14px
+        }
+
+        footer .container {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 20px
+        }
+
+        footer a {
+            color: #e2e8f0;
+            text-decoration: none
+        }
+
+        footer a:hover {
+            text-decoration: underline
+        }
+
+        .hidden {
+            display: none !important
+        }
+
+
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="container nav">
+            <div class="logo" id="logo"><span>✈️</span> YatraBook</div>
+            <button id="myBookingsBtn">My Bookings</button>
+        </div>
+    </header>
+
+    <section id="hero">
+        <div class="container">
+            <h1>Plan Your Perfect Trip</h1>
+            <p>Hotels, Food & Tours — all in one booking</p>
+            <form id="searchForm" class="search-card">
+                <div class="field">
+                    <label>Destination</label>
+                    <select id="destination" required>
+                        <option value="">Choose destination</option>
+                        <option>Kolhapur</option>
+                        <option>Goa</option>
+                        <option>Manali</option>
+                        <option>Jaipur</option>
+                        <option>Kerala</option>
+                        <option>Kashmir</option>
+                        <option>Andaman</option>
+                        <option>Dubai</option>
+                        <option>Bali</option>
+                        <option>Switzerland</option>
+                    </select>
+                </div>
+                <div class="field">
+                    <label>Start Date</label>
+                    <input type="date" id="startDate" required>
+                </div>
+                <div class="field">
+                    <label>End Date</label>
+                    <input type="date" id="endDate" required>
+                </div>
+                <div class="field">
+                    <label>Travelers</label>
+                    <select id="travelers" required>
+                        <option value="1">1 Traveler</option>
+                        <option value="2" selected>2 Travelers</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                        <option value="6">6</option>
+                        <option value="7">7</option>
+                        <option value="8">8</option>
+                        <option value="9">9</option>
+                        <option value="10">10</option>
+                    </select>
+                </div>
+                <button type="submit">Search</button>
+            </form>
+        </div>
+    </section>
+
+    <section id="results" class="hidden">
+        <div class="container results-grid">
+            <div class="main-panel">
+                <div class="panel-header">
+                    <div class="trip-meta">Trip to <strong id="metaDest">—</strong> • <span id="metaDates">—</span> •
+                        <span id="metaNights">—</span></div>
+                    <div class="actions">
+                        <button class="link-btn" id="editSearchBtn">Edit Search</button>
+                        <button class="link-btn" id="clearBtn">Clear</button>
+                    </div>
+                </div>
+
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="hotels">1. Hotels</button>
+                    <button class="tab-btn" data-tab="food">2. Food</button>
+                    <button class="tab-btn" data-tab="tours">3. Tour Packages</button>
+                </div>
+
+                <div id="tab-hotels" class="tab-content">
+                    <div id="hotelsGrid" class="hotels-grid"></div>
+                </div>
+                <div id="tab-food" class="tab-content hidden">
+                    <div id="foodGrid" class="food-grid"></div>
+                </div>
+                <div id="tab-tours" class="tab-content hidden">
+                    <div id="toursGrid" class="tours-grid"></div>
+                </div>
+
+                <div class="passenger-form">
+                    <h3>Passenger Details</h3>
+                    <div class="form-grid">
+                        <div class="form-field"><label>Full Name</label><input id="pName" placeholder="Aarav Sharma"
+                                required></div>
+                        <div class="form-field"><label>Email</label><input id="pEmail" type="email"
+                                placeholder="you@example.com" required></div>
+                        <div class="form-field"><label>Phone</label>
+                            <div class="phone-wrap"><span>+91</span><input id="pPhone" placeholder="9876543210"
+                                    maxlength="10" required></div>
+                        </div>
+                        <div class="form-field"><label>Age</label><input id="pAge" type="number" min="1" max="100"
+                                placeholder="28" required></div>
+                        <div class="form-field"><label>ID Type</label><select id="pIdType">
+                                <option>Aadhaar</option>
+                                <option>Passport</option>
+                            </select></div>
+                        <div class="form-field"><label>ID Number</label><input id="pIdNumber"
+                                placeholder="XXXX XXXX XXXX" required></div>
+                    </div>
+                </div>
+            </div>
+
+            <aside id="summary">
+                <div class="summary-handle" id="summaryHandle"><span></span></div>
+                <div class="summary-header-mobile">
+                    <strong>Booking Summary</strong>
+                    <strong id="sumMobileTotal">₹0</strong>
+                </div>
+                <div class="summary-title">🧾 Booking Summary</div>
+                <div class="summary-row"><span class="muted">Destination</span><span id="sumDestination">—</span></div>
+                <div class="summary-row"><span class="muted">Dates</span><span id="sumDates">—</span></div>
+                <div class="summary-row"><span class="muted">Nights / Travelers</span><span><span
+                            id="sumNights">0</span> N • <span id="sumTravelers">0</span> Pax</span></div>
+                <div class="summary-row"><span class="muted">Hotel</span><span id="sumHotel">Not selected</span></div>
+                <div class="summary-row muted" style="margin-top:-6px;font-size:12px"><span></span><span
+                        id="sumHotelAmt">₹0</span></div>
+                <div class="summary-row"><span class="muted">Food</span><span id="sumFood">Not selected</span></div>
+                <div class="summary-row muted" style="margin-top:-6px;font-size:12px"><span></span><span
+                        id="sumFoodAmt">₹0</span></div>
+                <div class="summary-row"><span class="muted">Tour</span><span id="sumTour">Not selected</span></div>
+                <div class="summary-row muted" style="margin-top:-6px;font-size:12px"><span></span><span
+                        id="sumTourAmt">₹0</span></div>
+                <div class="summary-row total"><span>Total</span><span id="sumTotal">₹0</span></div>
+                <button class="confirm-btn" id="confirmBtn" disabled>Confirm & Pay</button>
+                <p style="text-align:center;font-size:12px;color:var(--muted);margin-top:8px">Secure payment • Instant
+                    confirmation</p>
+            </aside>
+        </div>
+    </section>
+
+    <section id="myBookingsSection" class="hidden">
+        <div class="container">
+            <div class="section-head">
+                <h2 style="font-size:28px;font-weight:800">My Bookings</h2>
+                <button class="btn-secondary" id="backToSearch">Plan New Trip</button>
+            </div>
+            <div id="bookingsList" class="bookings-grid"></div>
+            <div id="emptyBookings" class="empty-state hidden">
+                <div style="font-size:48px;margin-bottom:12px">🧳</div>
+                <h3>No bookings yet</h3>
+                <p>Your confirmed trips will appear here</p>
+            </div>
+        </div>
+    </section>
+
+    <div id="successModal" class="modal-backdrop hidden">
+        <div class="modal">
+            <div class="success-icon">✓</div>
+            <h2>Booking Confirmed!</h2>
+            <p>Your e-ticket has been generated and downloaded</p>
+            <div class="code" id="successBookingId">YB-XXXXXX</div>
+            <div class="modal-actions">
+                <button class="btn-primary" id="downloadAgainBtn">Download PDF</button>
+                <button class="btn-secondary" id="viewBookingsBtn">View My Bookings</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="paymentModal" class="modal-backdrop hidden">
+        <div class="modal" style="max-width:420px">
+            <div style="font-size:32px;margin-bottom:8px">💳</div>
+            <h2 style="margin-bottom:6px">Dummy Payment</h2>
+            <p style="margin-bottom:20px">This is a test checkout. No real payment will be made.</p>
+            <div style="background:#f8fafc;border:1px solid var(--border);border-radius:14px;padding:16px;text-align:left;margin-bottom:20px">
+                <div style="font-size:13px;color:var(--muted);margin-bottom:4px;font-weight:600">CARD NUMBER</div>
+                <div style="font-size:16px;font-weight:700;letter-spacing:2px;margin-bottom:14px">4242 4242 4242 4242</div>
+                <div style="display:flex;gap:24px">
+                    <div>
+                        <div style="font-size:13px;color:var(--muted);margin-bottom:4px;font-weight:600">EXPIRY</div>
+                        <div style="font-weight:700">12/28</div>
+                    </div>
+                    <div>
+                        <div style="font-size:13px;color:var(--muted);margin-bottom:4px;font-weight:600">CVV</div>
+                        <div style="font-weight:700">123</div>
+                    </div>
+                </div>
+            </div>
+            <div style="background:linear-gradient(135deg,var(--teal),var(--indigo));color:#fff;border-radius:14px;padding:12px 16px;text-align:left;margin-bottom:20px">
+                <div style="font-size:12px;opacity:.8;margin-bottom:2px">AMOUNT TO PAY</div>
+                <div id="payModalTotal" style="font-size:22px;font-weight:800">₹0</div>
+            </div>
+            <div class="modal-actions">
+                <button class="btn-primary" id="dummyPayBtn" style="padding:12px 28px;font-size:15px">✅ Pay Now (Dummy)</button>
+                <button class="btn-secondary" id="cancelPayBtn" style="padding:12px 18px">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <div><strong style="color:#fff">YatraBook</strong> © 2025 • Travel Made Simple</div>
+            <div>support@yatrabook.in • +91-98765-43210</div>
+        </div>
+    </footer>
+
+    <script>
+        const hotelsData = {
+            "Kolhapur": [
+                { id: 1, name: "Hotel Sayaji Kolhapur", price: 3200, rating: 4.5, amenities: ["Pool", "Spa", "WiFi", "Restaurant"], img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80" },
+                { id: 2, name: "Hotel Pavilion", price: 2400, rating: 4.2, amenities: ["AC", "Restaurant", "Parking"], img: "https://images.unsplash.com/photo-1551882547-3320d5b6a8e2?auto=format&fit=crop&w=800&q=80" },
+                { id: 3, name: "Hotel Pearl", price: 1800, rating: 4.0, amenities: ["Breakfast", "WiFi"], img: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=800&q=80" },
+                { id: 4, name: "The Orchard Residency", price: 2900, rating: 4.3, amenities: ["Pool", "Gym", "Bar"], img: "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&w=800&q=80" }
+            ],
+            "Goa": [
+                { id: 1, name: "Taj Fort Aguada", price: 8500, rating: 4.8, amenities: ["Beachfront", "Pool", "Spa"], img: "https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=800&q=80" },
+                { id: 2, name: "W Goa", price: 12000, rating: 4.7, amenities: ["Luxury", "Infinity Pool", "Club"], img: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=800&q=80" },
+                { id: 3, name: "Zostel Goa", price: 1200, rating: 4.1, amenities: ["Hostel", "WiFi", "Cafe"], img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80" },
+                { id: 4, name: "ITC Grand Goa", price: 9200, rating: 4.6, amenities: ["Pool", "Spa", "Golf"], img: "https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&fit=crop&w=800&q=80" },
+                { id: 5, name: "La Calypso", price: 3500, rating: 4.3, amenities: ["Beach Walk", "Breakfast"], img: "https://images.unsplash.com/photo-1501117716987-c8e1ecb2100d?auto=format&fit=crop&w=800&q=80" }
+            ],
+            "Manali": [
+                { id: 1, name: "The Himalayan", price: 6500, rating: 4.5, amenities: ["Mountain View", "Spa", "Fireplace"], img: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=800&q=80" },
+                { id: 2, name: "Snow Valley Resorts", price: 3200, rating: 4.2, amenities: ["Valley View", "Restaurant"], img: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=800&q=80" },
+                { id: 3, name: "Soma Vineyard Resort", price: 4800, rating: 4.4, amenities: ["Pool", "Garden"], img: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=800&q=80" },
+                { id: 4, name: "Zostel Manali", price: 1100, rating: 4.0, amenities: ["Hostel", "Bonfire"], img: "https://images.unsplash.com/photo-1551524559-8af4e6624178?auto=format&fit=crop&w=800&q=80" },
+                { id: 5, name: "Apple Country Resort", price: 5400, rating: 4.3, amenities: ["Cottages", "Spa"], img: "https://images.unsplash.com/photo-1571003123894-1f0594d2b5d9?auto=format&fit=crop&w=800&q=80" }
+            ],
+            "Jaipur": [
+                { id: 1, name: "Rambagh Palace", price: 22000, rating: 4.9, amenities: ["Palace", "Pool", "Royal"], img: "https://images.unsplash.com/photo-1511691548754-31511e86e74f?auto=format&fit=crop&w=800&q=80" },
+                { id: 2, name: "Jaipur Marriott", price: 7500, rating: 4.5, amenities: ["Pool", "Gym", "Bar"], img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80" },
+                { id: 3, name: "Zostel Jaipur", price: 950, rating: 4.1, amenities: ["Hostel", "Rooftop"], img: "https://images.unsplash.com/photo-1522708323590-d24dbb6b0267?auto=format&fit=crop&w=800&q=80" },
+                { id: 4, name: "Lemon Tree Premier", price: 5200, rating: 4.3, amenities: ["Pool", "Restaurant"], img: "https://images.unsplash.com/photo-1551882547-2a3c7293e7a4?auto=format&fit=crop&w=800&q=80" },
+                { id: 5, name: "The Fern", price: 4300, rating: 4.2, amenities: ["Eco", "Breakfast"], img: "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&w=800&q=80" }
+            ],
+            "Kerala": [
+                { id: 1, name: "Kumarakom Lake Resort", price: 14500, rating: 4.8, amenities: ["Backwaters", "Pool", "Ayurveda"], img: "https://images.unsplash.com/photo-1591081658714-f576fb7ea3ed?auto=format&fit=crop&w=800&q=80" },
+                { id: 2, name: "Taj Bekal", price: 11200, rating: 4.7, amenities: ["Beach", "Spa"], img: "https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&fit=crop&w=800&q=80" },
+                { id: 3, name: "Zostel Varkala", price: 1300, rating: 4.2, amenities: ["Cliff View", "Cafe"], img: "https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=800&q=80" },
+                { id: 4, name: "Abad Whispering Palms", price: 4800, rating: 4.3, amenities: ["Lake View", "Pool"], img: "https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=800&q=80" },
+                { id: 5, name: "Coconut Lagoon", price: 8900, rating: 4.6, amenities: ["Heritage", "Boating"], img: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=800&q=80" }
+            ],
+            "Kashmir": [
+                { id: 1, name: "The Lalit Grand Palace", price: 9800, rating: 4.7, amenities: ["Palace", "Garden", "Dal View"], img: "https://images.unsplash.com/photo-1501785888041-af3ef285b470?auto=format&fit=crop&w=800&q=80" },
+                { id: 2, name: "Houseboat New Jacqueline", price: 3500, rating: 4.4, amenities: ["Houseboat", "Shikara"], img: "https://images.unsplash.com/photo-1563911302283-d2bc129e7570?auto=format&fit=crop&w=800&q=80" },
+                { id: 3, name: "Khyber Himalayan", price: 15000, rating: 4.9, amenities: ["Spa", "Ski", "Luxury"], img: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=800&q=80" },
+                { id: 4, name: "Hotel Heemal", price: 2800, rating: 4.1, amenities: ["Central", "Restaurant"], img: "https://images.unsplash.com/photo-1551882547-3320d5b6a8e2?auto=format&fit=crop&w=800&q=80" },
+                { id: 5, name: "Zostel Srinagar", price: 1400, rating: 4.0, amenities: ["Hostel", "Lake View"], img: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=800&q=80" }
+            ],
+            "Andaman": [
+                { id: 1, name: "Taj Exotica Havelock", price: 18500, rating: 4.8, amenities: ["Beachfront", "Pool", "Diving"], img: "https://images.unsplash.com/photo-1506929562872-bb421503ef21?auto=format&fit=crop&w=800&q=80" },
+                { id: 2, name: "SeaShell Havelock", price: 6200, rating: 4.4, amenities: ["Beach", "Pool"], img: "https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=800&q=80" },
+                { id: 3, name: "Symphony Palms", price: 4100, rating: 4.2, amenities: ["Garden", "Restaurant"], img: "https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&fit=crop&w=800&q=80" },
+                { id: 4, name: "Brewberrys", price: 2900, rating: 4.0, amenities: ["Boutique", "Cafe"], img: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=800&q=80" }
+            ],
+            "Dubai": [
+                { id: 1, name: "Atlantis The Palm", price: 24000, rating: 4.8, amenities: ["Aquarium", "Waterpark"], img: "https://images.unsplash.com/photo-1512453979798-5ea266f8880c?auto=format&fit=crop&w=800&q=80" },
+                { id: 2, name: "Armani Hotel Dubai", price: 32000, rating: 4.9, amenities: ["Burj Khalifa", "Luxury"], img: "https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=800&q=80" },
+                { id: 3, name: "Rove Downtown", price: 8500, rating: 4.4, amenities: ["Modern", "Pool"], img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80" },
+                { id: 4, name: "Hilton Dubai Creek", price: 11200, rating: 4.5, amenities: ["Creek View", "Spa"], img: "https://images.unsplash.com/photo-1551882547-2a3c7293e7a4?auto=format&fit=crop&w=800&q=80" },
+                { id: 5, name: "Premier Inn Dubai", price: 5500, rating: 4.1, amenities: ["Business", "Breakfast"], img: "https://images.unsplash.com/photo-1578683010236-d716f9a3f461?auto=format&fit=crop&w=800&q=80" }
+            ],
+            "Bali": [
+                { id: 1, name: "Four Seasons Jimbaran", price: 28000, rating: 4.9, amenities: ["Beach Villa", "Spa"], img: "https://images.unsplash.com/photo-1537996194471-e657df975ab4?auto=format&fit=crop&w=800&q=80" },
+                { id: 2, name: "Alila Ubud", price: 16500, rating: 4.8, amenities: ["Jungle", "Infinity Pool"], img: "https://images.unsplash.com/photo-1555400038-63f5ba517a47?auto=format&fit=crop&w=800&q=80" },
+                { id: 3, name: "Zostel Ubud", price: 1500, rating: 4.2, amenities: ["Hostel", "Yoga"], img: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=800&q=80" },
+                { id: 4, name: "Padma Resort Legian", price: 9200, rating: 4.6, amenities: ["Beachfront", "Pool"], img: "https://images.unsplash.com/photo-1571896349842-33c89424de2d?auto=format&fit=crop&w=800&q=80" },
+                { id: 5, name: "The Kayon Jungle", price: 12800, rating: 4.7, amenities: ["Valley View", "Romantic"], img: "https://images.unsplash.com/photo-1540541338287-41700207dee6?auto=format&fit=crop&w=800&q=80" }
+            ],
+            "Switzerland": [
+                { id: 1, name: "Bürgenstock Resort", price: 42000, rating: 4.9, amenities: ["Alpine", "Spa", "Lake"], img: "https://images.unsplash.com/photo-1527668752968-14dc70a27c95?auto=format&fit=crop&w=800&q=80" },
+                { id: 2, name: "Hotel Schweizerhof Zurich", price: 24500, rating: 4.7, amenities: ["City Center", "Luxury"], img: "https://images.unsplash.com/photo-1566073771259-6a8506099945?auto=format&fit=crop&w=800&q=80" },
+                { id: 3, name: "Youth Hostel Interlaken", price: 6800, rating: 4.3, amenities: ["Backpacker", "Mountain"], img: "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?auto=format&fit=crop&w=800&q=80" },
+                { id: 4, name: "The Chedi Andermatt", price: 38000, rating: 4.8, amenities: ["Ski", "Spa"], img: "https://images.unsplash.com/photo-1542314831-068cd1dbfeeb?auto=format&fit=crop&w=800&q=80" },
+                { id: 5, name: "Hotel d'Angleterre Geneva", price: 29000, rating: 4.6, amenities: ["Lake Geneva", "Classic"], img: "https://images.unsplash.com/photo-1551882547-2a3c7293e7a4?auto=format&fit=crop&w=800&q=80" }
+            ]
+        };
+
+        const foodOptions = [
+            { id: 'none', name: 'No Meals', price: 0, desc: 'Pay as you go' },
+            { id: 'breakfast', name: 'Breakfast Only', price: 400, desc: 'Daily buffet breakfast' },
+            { id: 'veg', name: 'Veg Full Board', price: 900, desc: 'Breakfast + Lunch + Dinner Veg' },
+            { id: 'nonveg', name: 'Non-Veg Full Board', price: 1200, desc: 'All meals with non-veg options' },
+            { id: 'jain', name: 'Jain Meal', price: 1000, desc: 'Satvik pure veg, no onion garlic' }
+        ];
+
+        const tourPackages = [
+            { id: 'local', name: 'Local Sightseeing', price: 1500, desc: 'City highlights, guide & cab', icon: '🗺️' },
+            { id: 'adventure', name: 'Adventure Trek', price: 2500, desc: 'Trekking, watersports, activities', icon: '🏔️' },
+            { id: 'cultural', name: 'Cultural Heritage', price: 1800, desc: 'Museums, forts, local shows', icon: '🏛️' },
+            { id: 'premium', name: 'Premium All-Inclusive', price: 4000, desc: 'Private car, VIP access, meals', icon: '💎' }
+        ];
+
+        let state = { destination: null, startDate: null, endDate: null, travelers: 2, nights: 0, hotel: null, food: null, tour: null };
+        let lastBooking = null;
+
+        const $ = id => document.getElementById(id);
+        function fmtINR(n) { return '₹' + n.toLocaleString('en-IN') }
+        function fmtDate(d) { return new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) }
+        function fmtShort(d) { return new Date(d).toLocaleDateString('en-IN', { day: '2-digit', month: 'short' }) }
+        function nightsBetween(a, b) { return Math.round((new Date(b) - new Date(a)) / 86400000) }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const today = new Date(); const tmr = new Date(Date.now() + 86400000 * 1); const dayAfter = new Date(Date.now() + 86400000 * 3);
+            $('startDate').min = tmr.toISOString().split('T')[0];
+            $('startDate').value = tmr.toISOString().split('T')[0];
+            $('endDate').min = dayAfter.toISOString().split('T')[0];
+            $('endDate').value = dayAfter.toISOString().split('T')[0];
+            renderFood(); renderTours(); setupTabs(); setupListeners(); updateSummary();
+        });
+
+        function setupListeners() {
+            $('searchForm').addEventListener('submit', onSearch);
+            $('editSearchBtn').onclick = () => { $('results').classList.add('hidden'); $('hero').scrollIntoView({ behavior: 'smooth' }); };
+            $('clearBtn').onclick = clearSelections;
+            $('confirmBtn').onclick = onConfirm;
+            $('myBookingsBtn').onclick = showMyBookings;
+            $('backToSearch').onclick = () => { $('myBookingsSection').classList.add('hidden'); $('hero').style.display = 'block'; window.scrollTo({ top: 0, behavior: 'smooth' }) };
+            $('logo').onclick = () => { location.reload() };
+            $('downloadAgainBtn').onclick = () => lastBooking && generatePDF(lastBooking, true);
+            $('viewBookingsBtn').onclick = () => { $('successModal').classList.add('hidden'); showMyBookings(); };
+            $('dummyPayBtn').onclick = completeBooking;
+            $('cancelPayBtn').onclick = () => $('paymentModal').classList.add('hidden');
+            $('summaryHandle').onclick = () => $('summary').classList.toggle('open');
+            ['pName', 'pEmail', 'pPhone', 'pAge', 'pIdNumber'].forEach(id => $(id).addEventListener('input', updateSummary));
+            $('travelers').addEventListener('change', () => { state.travelers = + $('travelers').value; updateSummary() });
+        }
+
+        function onSearch(e) {
+            e.preventDefault();
+            const dest = $('destination').value;
+            const s = $('startDate').value; const en = $('endDate').value; const trav = +$('travelers').value;
+            if (!dest || !s || !en) { alert('Please fill all fields'); return }
+            if (new Date(en) <= new Date(s)) { alert('End date must be after start date'); return }
+            state = { ...state, destination: dest, startDate: s, endDate: en, travelers: trav, nights: nightsBetween(s, en), hotel: null, food: null, tour: null };
+            $('metaDest').textContent = dest;
+            $('metaDates').textContent = `${fmtShort(s)} – ${fmtShort(en)}`;
+            $('metaNights').textContent = `${state.nights} Nights`;
+            $('hero').style.display = 'none';
+            $('myBookingsSection').classList.add('hidden');
+            $('results').classList.remove('hidden');
+            renderHotels(dest);
+            updateSummary();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function setupTabs() {
+            document.querySelectorAll('.tab-btn').forEach(btn => {
+                btn.onclick = () => {
+                    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    document.querySelectorAll('.tab-content').forEach(tc => tc.classList.add('hidden'));
+                    $('tab-' + btn.dataset.tab).classList.remove('hidden');
+                }
+            });
+        }
+
+        function renderHotels(dest) {
+            const grid = $('hotelsGrid'); grid.innerHTML = '';
+            (hotelsData[dest] || []).forEach(h => {
+                const card = document.createElement('div'); card.className = 'hotel-card'; card.innerHTML = `
+      <img src="${h.img}" alt="${h.name}" loading="lazy">
+      <div class="hotel-body">
+        <div class="hotel-top">
+          <div class="hotel-name">${h.name}</div>
+          <div class="hotel-price">${fmtINR(h.price)}</div>
+        </div>
+        <div class="hotel-rating">${'★'.repeat(Math.floor(h.rating))}${h.rating % 1 >= 0.5 ? '½' : ''} ${h.rating}</div>
+        <div class="hotel-amenities">${h.amenities.map(a => `<span class="amenity">${a}</span>`).join('')}</div>
+      </div>`;
+                card.onclick = () => { document.querySelectorAll('.hotel-card').forEach(c => c.classList.remove('selected')); card.classList.add('selected'); state.hotel = h; updateSummary(); document.querySelector('[data-tab="food"]').click(); };
+                grid.appendChild(card);
+            });
+        }
+
+        function renderFood() {
+            const grid = $('foodGrid'); grid.innerHTML = '';
+            foodOptions.forEach(f => {
+                const id = 'food_' + f.id;
+                grid.innerHTML += `<div class="food-option">
+      <input type="radio" name="food" id="${id}" value="${f.id}">
+      <label for="${id}">
+        <div class="food-info"><strong>${f.name}</strong><span>${f.desc}</span></div>
+        <div class="food-price">${f.price ? fmtINR(f.price) + '/day' : 'Free'}</div>
+      </label>
+    </div>`;
+            });
+            grid.querySelectorAll('input').forEach(inp => {
+                inp.onchange = () => { state.food = foodOptions.find(x => x.id === inp.value); updateSummary(); document.querySelector('[data-tab="tours"]').click(); }
+            });
+        }
+
+        function renderTours() {
+            const grid = $('toursGrid'); grid.innerHTML = '';
+            tourPackages.forEach(t => {
+                const card = document.createElement('div'); card.className = 'tour-card'; card.innerHTML = `
+      <div class="tour-icon">${t.icon}</div>
+      <div class="tour-name">${t.name}</div>
+      <div class="tour-desc">${t.desc}</div>
+      <div class="tour-price">${fmtINR(t.price)}/person</div>`;
+                card.onclick = () => { document.querySelectorAll('.tour-card').forEach(c => c.classList.remove('selected')); card.classList.add('selected'); state.tour = t; updateSummary(); };
+                grid.appendChild(card);
+            });
+        }
+
+        function updateSummary() {
+            $('sumDestination').textContent = state.destination || '—';
+            $('sumDates').textContent = state.startDate ? `${fmtShort(state.startDate)} – ${fmtShort(state.endDate)}` : '—';
+            $('sumNights').textContent = state.nights || 0;
+            $('sumTravelers').textContent = state.travelers || 0;
+
+            let hotelAmt = 0, foodAmt = 0, tourAmt = 0;
+            if (state.hotel) { $('sumHotel').textContent = state.hotel.name; hotelAmt = state.hotel.price * state.nights; $('sumHotelAmt').textContent = fmtINR(hotelAmt); }
+            else { $('sumHotel').textContent = 'Not selected'; $('sumHotelAmt').textContent = '₹0' }
+            if (state.food) { $('sumFood').textContent = state.food.name; foodAmt = state.food.price * state.nights * state.travelers; $('sumFoodAmt').textContent = fmtINR(foodAmt); }
+            else { $('sumFood').textContent = 'Not selected'; $('sumFoodAmt').textContent = '₹0' }
+            if (state.tour) { $('sumTour').textContent = state.tour.name; tourAmt = state.tour.price * state.travelers; $('sumTourAmt').textContent = fmtINR(tourAmt); }
+            else { $('sumTour').textContent = 'Not selected'; $('sumTourAmt').textContent = '₹0' }
+
+            const total = hotelAmt + foodAmt + tourAmt;
+            $('sumTotal').textContent = fmtINR(total);
+            $('sumMobileTotal').textContent = fmtINR(total);
+            state.total = total;
+
+            const formValid = validateForm(false);
+            $('confirmBtn').disabled = !(state.hotel && state.food && state.tour && formValid && total > 0);
+        }
+
+        function validateForm(showErrors = true) {
+            const fields = [
+                { el: $('pName'), test: v => v.trim().length >= 3 },
+                { el: $('pEmail'), test: v => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v) },
+                { el: $('pPhone'), test: v => /^\d{10}$/.test(v) },
+                { el: $('pAge'), test: v => +v >= 1 && +v <= 100 },
+                { el: $('pIdNumber'), test: v => v.trim().length >= 4 }
+            ];
+            let ok = true;
+            fields.forEach(f => {
+                const valid = f.test(f.el.value);
+                if (showErrors) { f.el.classList.toggle('error', !valid); }
+                if (!valid) ok = false;
+            });
+            return ok;
+        }
+
+        function clearSelections() {
+            state.hotel = null; state.food = null; state.tour = null;
+            document.querySelectorAll('.hotel-card.selected,.tour-card.selected').forEach(el => el.classList.remove('selected'));
+            document.querySelectorAll('input[name="food"]').forEach(i => i.checked = false);
+            updateSummary();
+        }
+
+        function onConfirm() {
+            if (!validateForm(true)) { alert('Please complete passenger details correctly'); document.querySelector('.passenger-form').scrollIntoView({ behavior: 'smooth' }); return }
+            if (!state.hotel || !state.food || !state.tour) { alert('Please select hotel, food and tour'); return }
+            $('payModalTotal').textContent = fmtINR(state.total);
+            $('paymentModal').classList.remove('hidden');
+        }
+
+        function completeBooking() {
+            $('paymentModal').classList.add('hidden');
+            const id = 'YB-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+            const booking = {
+                id, createdAt: new Date().toISOString(),
+                destination: state.destination, startDate: state.startDate, endDate: state.endDate,
+                nights: state.nights, travelers: state.travelers,
+                hotel: state.hotel, food: state.food, tour: state.tour,
+                total: state.total,
+                passenger: { name: $('pName').value.trim(), email: $('pEmail').value.trim(), phone: $('pPhone').value.trim(), age: $('pAge').value, idType: $('pIdType').value, idNumber: $('pIdNumber').value.trim() }
+            };
+            const all = JSON.parse(localStorage.getItem('yatrabookings') || '[]'); all.unshift(booking); localStorage.setItem('yatrabookings', JSON.stringify(all));
+            lastBooking = booking;
+            try { generatePDF(booking, true); } catch(e) { console.warn('PDF generation failed:', e); }
+            $('successBookingId').textContent = id;
+            $('successModal').classList.remove('hidden');
+        }
+
+        function generatePDF(data, download = true) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({ unit: 'mm', format: 'a4' });
+            // header
+            doc.setFillColor(13, 148, 136); doc.rect(0, 0, 210, 32, 'F');
+            doc.setTextColor(255, 255, 255); doc.setFont('helvetica', 'bold'); doc.setFontSize(22); doc.text('YatraBook', 14, 20);
+            doc.setFontSize(10); doc.setFont('helvetica', 'normal'); doc.text('Tours & Travels', 14, 26);
+            doc.setFontSize(10); doc.text('support@yatrabook.in', 196, 20, { align: 'right' });
+            // title
+            doc.setTextColor(15, 23, 42); doc.setFontSize(20); doc.setFont('helvetica', 'bold'); doc.text('Booking Confirmation', 14, 48);
+            doc.setFontSize(11); doc.setFont('helvetica', 'normal'); doc.setTextColor(100, 116, 139); doc.text('Thank you for choosing YatraBook!', 14, 55);
+            doc.setDrawColor(226, 232, 240); doc.line(14, 62, 196, 62);
+            let y = 72; const labelX = 14, valX = 60;
+            function row(l, v, b = false) { doc.setFont('helvetica', 'bold'); doc.setTextColor(71, 85, 105); doc.setFontSize(11); doc.text(l, labelX, y); doc.setFont('helvetica', b ? 'bold' : 'normal'); doc.setTextColor(15, 23, 42); doc.text(String(v), valX, y); y += 8; }
+            row('Booking ID:', data.id, true);
+            row('Passenger:', data.passenger.name);
+            row('Email:', data.passenger.email);
+            row('Phone:', '+91 ' + data.passenger.phone);
+            y += 2; doc.line(14, y, 196, y); y += 8;
+            row('Destination:', data.destination);
+            row('Travel Dates:', `${fmtDate(data.startDate)} to ${fmtDate(data.endDate)}`);
+            row('Nights:', data.nights + ' Nights');
+            row('Travelers:', data.travelers + ' Pax');
+            y += 2; doc.line(14, y, 196, y); y += 8;
+            row('Hotel:', `${data.hotel.name} (${fmtINR(data.hotel.price)}/night)`);
+            row('Food Plan:', `${data.food.name} (${fmtINR(data.food.price)}/day)`);
+            row('Tour Package:', `${data.tour.name} (${fmtINR(data.tour.price)}/person)`);
+            y += 6;
+            doc.setFillColor(240, 253, 250); doc.roundedRect(14, y, 182, 24, 3, 'F');
+            doc.setFont('helvetica', 'bold'); doc.setFontSize(13); doc.setTextColor(13, 148, 136); doc.text('Total Amount Paid', 18, y + 9);
+            doc.setFontSize(17); doc.setTextColor(15, 23, 42); doc.text(fmtINR(data.total), 18, y + 18);
+            doc.setFont('helvetica', 'normal'); doc.setFontSize(9); doc.setTextColor(100, 116, 139); doc.text('Inclusive of all taxes & fees', 110, y + 16);
+            // QR placeholder
+            doc.setDrawColor(13, 148, 136); doc.setLineWidth(0.6); doc.rect(160, 74, 36, 36);
+            doc.setFontSize(9); doc.setTextColor(13, 148, 136); doc.text('SCAN QR', 178, 93, { align: 'center' }); doc.text('at check-in', 178, 99, { align: 'center' });
+            // footer
+            doc.setFontSize(9); doc.setTextColor(148, 163, 184);
+            doc.text('This is a computer-generated ticket. Please carry valid ID proof during travel.', 14, 278);
+            doc.text(`Generated: ${new Date().toLocaleString('en-IN')} | YatraBook India Pvt Ltd`, 14, 284);
+            if (download) doc.save(`YatraBook-Ticket-${data.id}.pdf`);
+            return doc;
+        }
+
+        function showMyBookings() {
+            $('hero').style.display = 'none'; $('results').classList.add('hidden'); $('myBookingsSection').classList.remove('hidden');
+            const list = $('bookingsList'); list.innerHTML = ''; const all = JSON.parse(localStorage.getItem('yatrabookings') || '[]');
+            $('emptyBookings').classList.toggle('hidden', all.length > 0);
+            all.forEach(b => {
+                const card = document.createElement('div'); card.className = 'booking-card';
+                card.innerHTML = `
+      <h4>${b.destination} • ${b.nights}N</h4>
+      <div class="booking-meta">${fmtDate(b.startDate)} – ${fmtDate(b.endDate)} • ${b.travelers} pax • ${b.id}</div>
+      <div style="font-weight:700;margin-bottom:10px;color:var(--teal)">${fmtINR(b.total)}</div>
+      <div class="booking-meta">${b.hotel.name} • ${b.passenger.name}</div>
+      <div class="booking-actions">
+        <button class="btn-primary" style="padding:8px 12px;font-size:13px">Download PDF</button>
+        <button class="btn-secondary" style="padding:8px 12px;font-size:13px">Details</button>
+      </div>`;
+                card.querySelector('.btn-primary').onclick = () => generatePDF(b, true);
+                card.querySelector('.btn-secondary').onclick = () => alert(`Booking ${b.id}\n${b.destination}\nHotel: ${b.hotel.name}\nFood: ${b.food.name}\nTour: ${b.tour.name}\nTotal: ${fmtINR(b.total)}`);
+                list.appendChild(card);
+            });
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    </script>
+</body>
+
+</html>

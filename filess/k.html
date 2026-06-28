@@ -1,0 +1,1229 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>K</title>
+  <link
+    href="https://api.fontshare.com/v2/css?f[]=general-sans@400,500,600,700&f[]=cabinet-grotesk@500,700&display=swap"
+    rel="stylesheet">
+  <script defer src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+  <style>
+    :root,
+    [data-theme="light"] {
+      --text-xs: clamp(0.75rem, 0.7rem + 0.25vw, 0.875rem);
+      --text-sm: clamp(0.875rem, 0.8rem + 0.35vw, 1rem);
+      --text-base: clamp(1rem, 0.95rem + 0.25vw, 1.125rem);
+      --text-lg: clamp(1.125rem, 1rem + 0.75vw, 1.5rem);
+      --text-xl: clamp(1.5rem, 1.2rem + 1.25vw, 2.25rem);
+      --space-1: 0.25rem;
+      --space-2: 0.5rem;
+      --space-3: 0.75rem;
+      --space-4: 1rem;
+      --space-5: 1.25rem;
+      --space-6: 1.5rem;
+      --space-8: 2rem;
+      --space-10: 2.5rem;
+      --space-12: 3rem;
+      --space-16: 4rem;
+      --space-20: 5rem;
+      --color-bg: #f7f6f2;
+      --color-surface: #f9f8f5;
+      --color-surface-2: #fbfbf9;
+      --color-surface-offset: #f3f0ec;
+      --color-border: #d4d1ca;
+      --color-divider: #dcd9d5;
+      --color-text: #28251d;
+      --color-text-muted: #6d6b66;
+      --color-text-faint: #9b9890;
+      --color-text-inverse: #f9f8f4;
+      --color-primary: #01696f;
+      --color-primary-hover: #0c4e54;
+      --color-success: #437a22;
+      --color-success-highlight: #d4dfcc;
+      --color-warning: #964219;
+      --color-error: #a12c7b;
+      --radius-sm: 0.375rem;
+      --radius-md: 0.75rem;
+      --radius-lg: 1rem;
+      --radius-xl: 1.25rem;
+      --radius-full: 9999px;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, .06);
+      --shadow-md: 0 8px 24px rgba(0, 0, 0, .08);
+      --shadow-lg: 0 24px 48px rgba(0, 0, 0, .12);
+      --transition: 180ms cubic-bezier(0.16, 1, 0.3, 1);
+      --font-display: 'Cabinet Grotesk', Inter, sans-serif;
+      --font-body: 'General Sans', Inter, sans-serif;
+      --content: 1200px;
+    }
+
+    [data-theme="dark"] {
+      --color-bg: #171614;
+      --color-surface: #1c1b19;
+      --color-surface-2: #201f1d;
+      --color-surface-offset: #22211f;
+      --color-border: #393836;
+      --color-divider: #2a2927;
+      --color-text: #e2dfd8;
+      --color-text-muted: #b2aea5;
+      --color-text-faint: #87837b;
+      --color-text-inverse: #111;
+      --color-primary: #4f98a3;
+      --color-primary-hover: #6fb5bf;
+      --color-success: #7ec35a;
+      --color-success-highlight: #33412e;
+      --color-warning: #c68a64;
+      --color-error: #d163a7;
+      --shadow-sm: 0 1px 2px rgba(0, 0, 0, .22);
+      --shadow-md: 0 8px 24px rgba(0, 0, 0, .3);
+      --shadow-lg: 0 24px 48px rgba(0, 0, 0, .42);
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box
+    }
+
+    html {
+      scroll-behavior: smooth;
+      -webkit-text-size-adjust: none;
+      text-size-adjust: none
+    }
+
+    body {
+      margin: 0;
+      font-family: var(--font-body);
+      font-size: var(--text-base);
+      line-height: 1.6;
+      background: var(--color-bg);
+      color: var(--color-text)
+    }
+
+    img,
+    svg {
+      display: block;
+      max-width: 100%
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit
+    }
+
+    a {
+      text-decoration: none;
+      color: inherit
+    }
+
+    h1,
+    h2,
+    h3 {
+      line-height: 1.1;
+      text-wrap: balance
+    }
+
+    p {
+      max-width: 68ch;
+      text-wrap: pretty
+    }
+
+    :focus-visible {
+      outline: 2px solid var(--color-primary);
+      outline-offset: 3px;
+      border-radius: var(--radius-sm)
+    }
+
+    .skip-link {
+      position: absolute;
+      left: -999px;
+      top: 0;
+      background: var(--color-primary);
+      color: var(--color-text-inverse);
+      padding: var(--space-3) var(--space-4);
+      z-index: 30
+    }
+
+    .skip-link:focus {
+      left: var(--space-4);
+      top: var(--space-4)
+    }
+
+    .container {
+      width: min(calc(100% - 2rem), var(--content));
+      margin-inline: auto
+    }
+
+    .app-shell {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      min-height: 100dvh
+    }
+
+    .sidebar {
+      background: var(--color-surface);
+      border-right: 1px solid var(--color-border);
+      padding: var(--space-6);
+      display: flex;
+      flex-direction: column;
+      gap: var(--space-6);
+      position: sticky;
+      top: 0;
+      height: 100dvh
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3)
+    }
+
+    .brand svg {
+      width: 44px;
+      height: 44px;
+      color: var(--color-primary)
+    }
+
+    .brand h1 {
+      font-family: var(--font-display);
+      font-size: var(--text-lg);
+      margin: 0
+    }
+
+    .brand p {
+      margin: 0;
+      color: var(--color-text-muted);
+      font-size: var(--text-xs)
+    }
+
+    .nav-links {
+      display: grid;
+      gap: var(--space-2)
+    }
+
+    .nav-link {
+      padding: var(--space-3) var(--space-4);
+      border-radius: var(--radius-md);
+      color: var(--color-text-muted);
+      font-size: var(--text-sm);
+      font-weight: 600
+    }
+
+    .nav-link:hover,
+    .nav-link.active {
+      background: color-mix(in srgb, var(--color-primary) 10%, transparent);
+      color: var(--color-text)
+    }
+
+    .side-card {
+      margin-top: auto;
+      padding: var(--space-5);
+      background: var(--color-surface-offset);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg)
+    }
+
+    .side-card strong {
+      display: block;
+      margin-bottom: var(--space-2)
+    }
+
+    .main {
+      min-width: 0
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: var(--space-4) var(--space-6);
+      border-bottom: 1px solid var(--color-divider);
+      position: sticky;
+      top: 0;
+      background: color-mix(in srgb, var(--color-bg) 88%, transparent);
+      backdrop-filter: blur(14px);
+      z-index: 20
+    }
+
+    .topbar-actions {
+      display: flex;
+      gap: var(--space-3);
+      align-items: center
+    }
+
+    .theme-toggle,
+    .menu-toggle {
+      display: grid;
+      place-items: center;
+      width: 46px;
+      height: 46px;
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-full);
+      background: var(--color-surface);
+      cursor: pointer
+    }
+
+    .menu-toggle {
+      display: none
+    }
+
+    .hero {
+      padding: var(--space-10) var(--space-6) var(--space-8)
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 1.1fr .9fr;
+      gap: var(--space-8);
+      align-items: start
+    }
+
+    .hero-copy h2 {
+      font-family: var(--font-display);
+      font-size: var(--text-xl);
+      margin: 0 0 var(--space-4)
+    }
+
+    .hero-copy p {
+      color: var(--color-text-muted);
+      margin: 0 0 var(--space-6)
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-4);
+      margin-top: var(--space-6)
+    }
+
+    .stat {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      padding: var(--space-4);
+      border-radius: var(--radius-lg);
+      box-shadow: var(--shadow-sm)
+    }
+
+    .stat strong {
+      display: block;
+      font-size: var(--text-lg);
+      font-variant-numeric: tabular-nums lining-nums
+    }
+
+    .booking-card,
+    .panel,
+    .summary-card,
+    .list-card {
+      background: var(--color-surface);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-xl);
+      box-shadow: var(--shadow-md)
+    }
+
+    .booking-card {
+      padding: var(--space-6)
+    }
+
+    .section {
+      padding: 0 var(--space-6) var(--space-8)
+    }
+
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: end;
+      gap: var(--space-4);
+      margin-bottom: var(--space-5)
+    }
+
+    .section-title h3 {
+      margin: 0;
+      font-size: var(--text-lg)
+    }
+
+    .section-title p {
+      margin: 0;
+      color: var(--color-text-muted);
+      font-size: var(--text-sm)
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-4)
+    }
+
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: var(--space-4)
+    }
+
+    .field {
+      display: grid;
+      gap: var(--space-2)
+    }
+
+    .field label {
+      font-size: var(--text-sm);
+      font-weight: 600
+    }
+
+    .field input,
+    .field select,
+    .field textarea {
+      width: 100%;
+      padding: .9rem 1rem;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--color-border);
+      background: var(--color-surface-2);
+      color: var(--color-text)
+    }
+
+    .field textarea {
+      min-height: 84px;
+      resize: vertical
+    }
+
+    .chip-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: var(--space-2)
+    }
+
+    .chip {
+      padding: .6rem .9rem;
+      border: 1px solid var(--color-border);
+      background: var(--color-surface-2);
+      border-radius: var(--radius-full);
+      font-size: var(--text-sm);
+      cursor: pointer
+    }
+
+    .chip.active {
+      background: var(--color-primary);
+      border-color: var(--color-primary);
+      color: var(--color-text-inverse)
+    }
+
+    .food-grid,
+    .package-grid,
+    .hotel-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: var(--space-4)
+    }
+
+    .option-card {
+      padding: var(--space-4);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg);
+      background: var(--color-surface-2);
+      cursor: pointer;
+      display: grid;
+      gap: var(--space-2)
+    }
+
+    .option-card.active {
+      border-color: var(--color-primary);
+      background: color-mix(in srgb, var(--color-primary) 9%, var(--color-surface-2));
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--color-primary) 28%, transparent)
+    }
+
+    .option-head {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--space-3);
+      align-items: start
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: .35rem;
+      padding: .4rem .75rem;
+      border-radius: var(--radius-full);
+      background: var(--color-success-highlight);
+      color: var(--color-success);
+      font-size: var(--text-xs);
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .06em
+    }
+
+    .price {
+      font-weight: 700;
+      font-variant-numeric: tabular-nums lining-nums
+    }
+
+    .actions {
+      display: flex;
+      gap: var(--space-3);
+      flex-wrap: wrap;
+      margin-top: var(--space-6)
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: var(--space-2);
+      min-height: 46px;
+      padding: .85rem 1.15rem;
+      border-radius: var(--radius-md);
+      font-size: var(--text-sm);
+      font-weight: 700;
+      border: 1px solid transparent;
+      cursor: pointer
+    }
+
+    .btn-primary {
+      background: var(--color-primary);
+      color: var(--color-text-inverse)
+    }
+
+    .btn-primary:hover {
+      background: var(--color-primary-hover)
+    }
+
+    .btn-secondary {
+      background: var(--color-surface-2);
+      border-color: var(--color-border);
+      color: var(--color-text)
+    }
+
+    .summary-card {
+      padding: var(--space-6);
+      position: sticky;
+      top: 88px
+    }
+
+    .summary-list {
+      display: grid;
+      gap: var(--space-3);
+      margin: var(--space-5) 0
+    }
+
+    .summary-row {
+      display: flex;
+      justify-content: space-between;
+      gap: var(--space-4);
+      font-size: var(--text-sm)
+    }
+
+    .summary-row span:last-child,
+    .summary-total span:last-child {
+      font-variant-numeric: tabular-nums lining-nums
+    }
+
+    .summary-total {
+      display: flex;
+      justify-content: space-between;
+      padding-top: var(--space-4);
+      border-top: 1px solid var(--color-divider);
+      font-weight: 700
+    }
+
+    .muted {
+      color: var(--color-text-muted)
+    }
+
+    .tiny {
+      font-size: var(--text-xs);
+      color: var(--color-text-muted)
+    }
+
+    .booking-layout {
+      display: grid;
+      grid-template-columns: 1.4fr .8fr;
+      gap: var(--space-6);
+      align-items: start
+    }
+
+    .panel {
+      padding: var(--space-6)
+    }
+
+    .list-card {
+      padding: var(--space-5)
+    }
+
+    .bookings-list {
+      display: grid;
+      gap: var(--space-4)
+    }
+
+    .booking-item {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: var(--space-4);
+      padding: var(--space-4);
+      background: var(--color-surface-2);
+      border: 1px solid var(--color-border);
+      border-radius: var(--radius-lg)
+    }
+
+    .booking-item h4 {
+      margin: 0 0 .2rem
+    }
+
+    .booking-item p {
+      margin: 0;
+      color: var(--color-text-muted);
+      font-size: var(--text-sm)
+    }
+
+    .success-banner {
+      display: none;
+      margin-top: var(--space-5);
+      padding: var(--space-4);
+      border-radius: var(--radius-lg);
+      background: var(--color-success-highlight);
+      color: var(--color-success);
+      font-weight: 700
+    }
+
+    .success-banner.show {
+      display: block
+    }
+
+    .footer-note {
+      padding: 0 var(--space-6) var(--space-10);
+      color: var(--color-text-muted);
+      font-size: var(--text-sm)
+    }
+
+    .hidden {
+      display: none !important
+    }
+
+    @media (max-width: 1080px) {
+      .app-shell {
+        grid-template-columns: 1fr
+      }
+
+      .sidebar {
+        position: fixed;
+        inset: 0 auto 0 0;
+        width: min(82vw, 320px);
+        transform: translateX(-102%);
+        transition: transform var(--transition);
+        z-index: 40;
+        box-shadow: var(--shadow-lg)
+      }
+
+      .sidebar.open {
+        transform: translateX(0)
+      }
+
+      .menu-toggle {
+        display: grid
+      }
+
+      .hero-grid,
+      .booking-layout,
+      .grid-3,
+      .food-grid,
+      .package-grid,
+      .hotel-grid,
+      .grid-2,
+      .stats {
+        grid-template-columns: 1fr
+      }
+
+      .summary-card {
+        position: static
+      }
+    }
+
+    @media (max-width: 640px) {
+
+      .hero,
+      .section,
+      .footer-note,
+      .topbar {
+        padding-inline: var(--space-4)
+      }
+
+      .booking-card,
+      .panel,
+      .summary-card {
+        padding: var(--space-5)
+      }
+
+      .topbar {
+        gap: var(--space-3)
+      }
+
+      .topbar strong {
+        display: none
+      }
+
+      .booking-item {
+        grid-template-columns: 1fr
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      * {
+        scroll-behavior: auto;
+        transition: none !important
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <a href="#main-content" class="skip-link">Skip to content</a>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <div class="brand">
+        <svg viewBox="0 0 64 64" aria-label="Roamly logo" role="img" fill="none">
+          <rect x="8" y="10" width="48" height="44" rx="12" stroke="currentColor" stroke-width="4"></rect>
+          <path d="M18 41c8-18 15-24 28-26-6 9-8 16-9 27" stroke="currentColor" stroke-width="4" stroke-linecap="round"
+            stroke-linejoin="round"></path>
+          <circle cx="43" cy="23" r="4" fill="currentColor"></circle>
+        </svg>
+        <div>
+          <h1>Roamly Trips</h1>
+          <p>Hotels, food, package, ticket</p>
+        </div>
+      </div>
+
+      <nav class="nav-links" aria-label="Primary navigation">
+        <a class="nav-link active" href="#planner">Trip planner</a>
+        <a class="nav-link" href="#packages">Packages</a>
+        <a class="nav-link" href="#hotels">Hotels</a>
+        <a class="nav-link" href="#food">Food</a>
+        <a class="nav-link" href="#bookings">Bookings</a>
+      </nav>
+
+      <div class="side-card">
+        <strong>Booking flow</strong>
+        <p class="tiny">Choose destination, hotel, package, meals, traveler count, then confirm to generate a PDF ticket
+          instantly.</p>
+      </div>
+    </aside>
+
+    <main class="main" id="main-content">
+      <header class="topbar">
+        <div class="topbar-actions">
+          <button class="menu-toggle" id="menuToggle" aria-label="Open navigation">☰</button>
+          <div>
+            <strong>Travel booking dashboard</strong>
+            <div class="tiny">Client-side demo with instant ticket PDF</div>
+          </div>
+        </div>
+        <div class="topbar-actions">
+          <button class="theme-toggle" data-theme-toggle aria-label="Switch theme">🌙</button>
+        </div>
+      </header>
+
+      <section class="hero" id="planner">
+        <div class="hero-grid">
+          <div class="hero-copy">
+            <div class="badge">Live booking demo</div>
+            <h2>Book your destination, hotel, meals, and full tour package from one clean flow.</h2>
+            <p>This website lets customers select a location, choose a stay, pick a food plan, add a package, enter
+              traveler details, and download a ticket PDF after a successful booking.</p>
+            <div class="stats">
+              <div class="stat"><span class="tiny">Destinations</span><strong id="statDestinations">0</strong></div>
+              <div class="stat"><span class="tiny">Hotels</span><strong id="statHotels">0</strong></div>
+              <div class="stat"><span class="tiny">Avg. package</span><strong id="statAverage">₹0</strong></div>
+            </div>
+          </div>
+
+          <div class="booking-card">
+            <div class="section-title">
+              <div>
+                <h3>Plan trip</h3>
+                <p>Everything updates in the summary automatically.</p>
+              </div>
+            </div>
+
+            <div class="grid-2">
+              <div class="field">
+                <label for="travelerName">Traveler name</label>
+                <input id="travelerName" type="text" placeholder="Enter full name" />
+              </div>
+              <div class="field">
+                <label for="travelDate">Travel date</label>
+                <input id="travelDate" type="date" />
+              </div>
+            </div>
+
+            <div class="grid-3" style="margin-top:1rem;">
+              <div class="field">
+                <label for="locationSelect">Destination</label>
+                <select id="locationSelect"></select>
+              </div>
+              <div class="field">
+                <label for="travelersCount">Travelers</label>
+                <input id="travelersCount" type="number" min="1" value="2" />
+              </div>
+              <div class="field">
+                <label for="nightsCount">Nights</label>
+                <input id="nightsCount" type="number" min="1" value="3" />
+              </div>
+            </div>
+
+            <div class="field" style="margin-top:1rem;">
+              <label>Transport</label>
+              <div class="chip-row" id="transportChips"></div>
+            </div>
+
+            <div class="field" style="margin-top:1rem;">
+              <label for="specialRequest">Special request</label>
+              <textarea id="specialRequest" placeholder="Meal preference, pickup note, sightseeing request"></textarea>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section" id="packages">
+        <div class="section-title">
+          <div>
+            <h3>Tour packages</h3>
+            <p>Select one package for the chosen location.</p>
+          </div>
+        </div>
+        <div class="package-grid" id="packageGrid"></div>
+      </section>
+
+      <section class="section" id="hotels">
+        <div class="section-title">
+          <div>
+            <h3>Hotels</h3>
+            <p>Choose a stay based on comfort and nightly price.</p>
+          </div>
+        </div>
+        <div class="hotel-grid" id="hotelGrid"></div>
+      </section>
+
+      <section class="section" id="food">
+        <div class="section-title">
+          <div>
+            <h3>Food plans</h3>
+            <p>Add meal coverage for the entire booking.</p>
+          </div>
+        </div>
+        <div class="food-grid" id="foodGrid"></div>
+      </section>
+
+      <section class="section" id="bookings">
+        <div class="booking-layout">
+          <div class="panel">
+            <div class="section-title">
+              <div>
+                <h3>Guest details</h3>
+                <p>Confirm details before booking.</p>
+              </div>
+            </div>
+            <div class="grid-2">
+              <div class="field">
+                <label for="email">Email</label>
+                <input id="email" type="email" placeholder="name@example.com" />
+              </div>
+              <div class="field">
+                <label for="phone">Phone</label>
+                <input id="phone" type="tel" placeholder="9876543210" />
+              </div>
+            </div>
+            <div class="actions">
+              <button class="btn btn-primary" id="confirmBooking">Confirm booking</button>
+              <button class="btn btn-secondary" id="downloadPdf" disabled>Download ticket PDF</button>
+              <button class="btn btn-secondary" id="resetBooking">Reset</button>
+            </div>
+            <div class="success-banner" id="successBanner">Booking successful. Your ticket is ready to download.</div>
+          </div>
+
+          <aside class="summary-card">
+            <h3 style="margin:0;">Booking summary</h3>
+            <p class="tiny">Realtime invoice for the selected trip.</p>
+            <div class="summary-list" id="summaryList"></div>
+            <div class="summary-total"><span>Total</span><span id="summaryTotal">₹0</span></div>
+          </aside>
+        </div>
+      </section>
+
+      <section class="section">
+        <div class="section-title">
+          <div>
+            <h3>Recent bookings</h3>
+            <p>New bookings appear here in the current session.</p>
+          </div>
+        </div>
+        <div class="bookings-list" id="bookingsList"></div>
+      </section>
+
+      <div class="footer-note">This is a working frontend demo. It stores data in browser memory for the current session
+        and generates the booking ticket as a PDF on the client side.</div>
+    </main>
+  </div>
+
+  <script>
+    const appData = {
+      locations: [
+        {
+          id: 'goa', name: 'Goa', baseFee: 1800,
+          hotels: [
+            { id: 'goa-seabreeze', name: 'Sea Breeze Resort', stars: '4-star', price: 4200, note: 'Near Baga Beach' },
+            { id: 'goa-palms', name: 'Palm Cove Hotel', stars: '3-star', price: 2800, note: 'Pool and breakfast' },
+            { id: 'goa-lux', name: 'Azure Grand', stars: '5-star', price: 6900, note: 'Luxury stay with cab pickup' }
+          ],
+          foods: [
+            { id: 'goa-breakfast', name: 'Breakfast only', price: 450, note: 'Daily breakfast buffet' },
+            { id: 'goa-half', name: 'Half board', price: 900, note: 'Breakfast and dinner' },
+            { id: 'goa-full', name: 'Full board', price: 1450, note: 'Breakfast, lunch, dinner' }
+          ],
+          packages: [
+            { id: 'goa-relax', name: 'Beach Relax', price: 3200, note: 'North Goa sightseeing and beach hop', tag: 'Popular' },
+            { id: 'goa-family', name: 'Family Escape', price: 4600, note: 'Cruise dinner and family activities', tag: 'Family' },
+            { id: 'goa-adventure', name: 'Adventure Mix', price: 5800, note: 'Water sports and old Goa tour', tag: 'Action' }
+          ]
+        },
+        {
+          id: 'manali', name: 'Manali', baseFee: 2200,
+          hotels: [
+            { id: 'manali-pine', name: 'Pine Crest Inn', stars: '3-star', price: 3100, note: 'Himalayan valley view' },
+            { id: 'manali-snow', name: 'Snow Peak Retreat', stars: '4-star', price: 4700, note: 'Bonfire and breakfast' },
+            { id: 'manali-alpine', name: 'Alpine Crown', stars: '5-star', price: 7200, note: 'Premium mountain suite' }
+          ],
+          foods: [
+            { id: 'manali-breakfast', name: 'Breakfast only', price: 400, note: 'Local and continental' },
+            { id: 'manali-half', name: 'Half board', price: 850, note: 'Breakfast and dinner' },
+            { id: 'manali-full', name: 'Full board', price: 1300, note: 'All meals included' }
+          ],
+          packages: [
+            { id: 'manali-snowtrip', name: 'Snow Trail', price: 3500, note: 'Solang Valley and snow point', tag: 'Best seller' },
+            { id: 'manali-romance', name: 'Couple Retreat', price: 4900, note: 'Private cab and scenic cafes', tag: 'Couple' },
+            { id: 'manali-trek', name: 'Adventure Trek', price: 6100, note: 'Guided trek and camp setup', tag: 'Adventure' }
+          ]
+        },
+        {
+          id: 'jaipur', name: 'Jaipur', baseFee: 1600,
+          hotels: [
+            { id: 'jaipur-royal', name: 'Royal Haveli', stars: '4-star', price: 3900, note: 'Heritage stay inside city' },
+            { id: 'jaipur-bazaar', name: 'Pink City Stay', stars: '3-star', price: 2600, note: 'Near local markets' },
+            { id: 'jaipur-palace', name: 'Amber Palace Suites', stars: '5-star', price: 6500, note: 'Premium royal interiors' }
+          ],
+          foods: [
+            { id: 'jaipur-breakfast', name: 'Breakfast only', price: 350, note: 'Tea, snacks, breakfast' },
+            { id: 'jaipur-half', name: 'Half board', price: 780, note: 'Breakfast and dinner' },
+            { id: 'jaipur-full', name: 'Full board', price: 1200, note: 'Full Rajasthani meal plan' }
+          ],
+          packages: [
+            { id: 'jaipur-heritage', name: 'Heritage Trail', price: 2800, note: 'Amber Fort, Hawa Mahal, City Palace', tag: 'Culture' },
+            { id: 'jaipur-shop', name: 'Market Explorer', price: 3400, note: 'Bazaars, food walk, local guide', tag: 'Shopping' },
+            { id: 'jaipur-royal', name: 'Royal Weekend', price: 5200, note: 'Palace dinner and guided city ride', tag: 'Premium' }
+          ]
+        },
+        {
+          id: 'kerala', name: 'Kerala', baseFee: 2400,
+          hotels: [
+            { id: 'kerala-backwater', name: 'Backwater Nest', stars: '4-star', price: 4400, note: 'Alleppey canal access' },
+            { id: 'kerala-green', name: 'Green Leaf Retreat', stars: '3-star', price: 3000, note: 'Nature-friendly cottages' },
+            { id: 'kerala-lagoon', name: 'Lagoon Luxe', stars: '5-star', price: 7600, note: 'Spa and private houseboat dock' }
+          ],
+          foods: [
+            { id: 'kerala-breakfast', name: 'Breakfast only', price: 420, note: 'South Indian breakfast spread' },
+            { id: 'kerala-half', name: 'Half board', price: 920, note: 'Breakfast and dinner' },
+            { id: 'kerala-full', name: 'Full board', price: 1500, note: 'Meal plan with local cuisine' }
+          ],
+          packages: [
+            { id: 'kerala-houseboat', name: 'Backwater Cruise', price: 4200, note: 'Houseboat day trip and village visit', tag: 'Top rated' },
+            { id: 'kerala-hill', name: 'Hill & Tea Tour', price: 5100, note: 'Munnar hills and tea garden visit', tag: 'Scenic' },
+            { id: 'kerala-complete', name: 'Kerala Complete', price: 6900, note: 'Backwaters, hills, and cultural evening', tag: 'Extended' }
+          ]
+        }
+      ],
+      transports: [
+        { id: 'bus', name: 'Volvo Bus', price: 1200 },
+        { id: 'train', name: 'Train', price: 1800 },
+        { id: 'flight', name: 'Flight', price: 6200 }
+      ]
+    };
+
+    const state = {
+      travelerName: '', travelDate: '', travelers: 2, nights: 3, locationId: 'goa', transportId: 'bus',
+      hotelId: '', foodId: '', packageId: '', specialRequest: '', email: '', phone: '',
+      lastBooking: null, bookings: []
+    };
+
+    const els = {
+      locationSelect: document.getElementById('locationSelect'),
+      travelersCount: document.getElementById('travelersCount'),
+      nightsCount: document.getElementById('nightsCount'),
+      travelerName: document.getElementById('travelerName'),
+      travelDate: document.getElementById('travelDate'),
+      specialRequest: document.getElementById('specialRequest'),
+      email: document.getElementById('email'),
+      phone: document.getElementById('phone'),
+      transportChips: document.getElementById('transportChips'),
+      hotelGrid: document.getElementById('hotelGrid'),
+      foodGrid: document.getElementById('foodGrid'),
+      packageGrid: document.getElementById('packageGrid'),
+      summaryList: document.getElementById('summaryList'),
+      summaryTotal: document.getElementById('summaryTotal'),
+      bookingsList: document.getElementById('bookingsList'),
+      successBanner: document.getElementById('successBanner'),
+      downloadPdf: document.getElementById('downloadPdf'),
+      confirmBooking: document.getElementById('confirmBooking'),
+      resetBooking: document.getElementById('resetBooking'),
+      statDestinations: document.getElementById('statDestinations'),
+      statHotels: document.getElementById('statHotels'),
+      statAverage: document.getElementById('statAverage'),
+      menuToggle: document.getElementById('menuToggle'),
+      sidebar: document.getElementById('sidebar')
+    };
+
+    function formatCurrency(value) { return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(value); }
+    function currentLocation() { return appData.locations.find(l => l.id === state.locationId); }
+    function selectedTransport() { return appData.transports.find(t => t.id === state.transportId); }
+    function selectedHotel() { return currentLocation().hotels.find(h => h.id === state.hotelId); }
+    function selectedFood() { return currentLocation().foods.find(f => f.id === state.foodId); }
+    function selectedPackage() { return currentLocation().packages.find(p => p.id === state.packageId); }
+
+    function renderStats() {
+      const hotelCount = appData.locations.reduce((a, l) => a + l.hotels.length, 0);
+      const packagePrices = appData.locations.flatMap(l => l.packages.map(p => p.price));
+      const avg = Math.round(packagePrices.reduce((a, b) => a + b, 0) / packagePrices.length);
+      els.statDestinations.textContent = appData.locations.length;
+      els.statHotels.textContent = hotelCount;
+      els.statAverage.textContent = formatCurrency(avg);
+    }
+
+    function renderLocationSelect() {
+      els.locationSelect.innerHTML = appData.locations.map(loc => `<option value="${loc.id}">${loc.name}</option>`).join('');
+      els.locationSelect.value = state.locationId;
+    }
+
+    function renderTransports() {
+      els.transportChips.innerHTML = appData.transports.map(t => `<button type="button" class="chip ${t.id === state.transportId ? 'active' : ''}" data-transport="${t.id}">${t.name} · ${formatCurrency(t.price)}</button>`).join('');
+      els.transportChips.querySelectorAll('[data-transport]').forEach(btn => btn.onclick = () => { state.transportId = btn.dataset.transport; renderTransports(); renderSummary(); });
+    }
+
+    function cardTemplate(type, item, activeId) {
+      const isActive = item.id === activeId;
+      return `<button type="button" class="option-card ${isActive ? 'active' : ''}" data-type="${type}" data-id="${item.id}">
+        <div class="option-head">
+          <div>
+            <strong>${item.name}</strong>
+            <div class="tiny">${item.stars || item.tag || ''}</div>
+          </div>
+          <span class="price">${formatCurrency(item.price)}</span>
+        </div>
+        <div class="muted" style="font-size:var(--text-sm);">${item.note}</div>
+      </button>`;
+    }
+
+    function renderOptions() {
+      const loc = currentLocation();
+      if (!state.hotelId) state.hotelId = loc.hotels[0].id;
+      if (!state.foodId) state.foodId = loc.foods[0].id;
+      if (!state.packageId) state.packageId = loc.packages[0].id;
+      els.hotelGrid.innerHTML = loc.hotels.map(h => cardTemplate('hotel', h, state.hotelId)).join('');
+      els.foodGrid.innerHTML = loc.foods.map(f => cardTemplate('food', f, state.foodId)).join('');
+      els.packageGrid.innerHTML = loc.packages.map(p => cardTemplate('package', p, state.packageId)).join('');
+      document.querySelectorAll('.option-card').forEach(card => {
+        card.onclick = () => {
+          const { type, id } = card.dataset;
+          if (type === 'hotel') state.hotelId = id;
+          if (type === 'food') state.foodId = id;
+          if (type === 'package') state.packageId = id;
+          renderOptions();
+          renderSummary();
+        };
+      });
+    }
+
+    function computeTotal() {
+      const loc = currentLocation();
+      const hotel = selectedHotel();
+      const food = selectedFood();
+      const pack = selectedPackage();
+      const transport = selectedTransport();
+      const travelers = Math.max(1, Number(state.travelers) || 1);
+      const nights = Math.max(1, Number(state.nights) || 1);
+      return {
+        locationFee: loc.baseFee * travelers,
+        hotelFee: hotel.price * nights,
+        foodFee: food.price * nights * travelers,
+        packageFee: pack.price * travelers,
+        transportFee: transport.price * travelers,
+        total: (loc.baseFee * travelers) + (hotel.price * nights) + (food.price * nights * travelers) + (pack.price * travelers) + (transport.price * travelers)
+      };
+    }
+
+    function renderSummary() {
+      const price = computeTotal();
+      const summary = [
+        ['Destination', currentLocation().name],
+        ['Hotel', selectedHotel().name],
+        ['Food', selectedFood().name],
+        ['Package', selectedPackage().name],
+        ['Transport', selectedTransport().name],
+        ['Travelers', String(state.travelers)],
+        ['Nights', String(state.nights)],
+        ['Destination fee', formatCurrency(price.locationFee)],
+        ['Hotel fee', formatCurrency(price.hotelFee)],
+        ['Food fee', formatCurrency(price.foodFee)],
+        ['Package fee', formatCurrency(price.packageFee)],
+        ['Transport fee', formatCurrency(price.transportFee)]
+      ];
+      els.summaryList.innerHTML = summary.map(([k, v]) => `<div class="summary-row"><span>${k}</span><span>${v}</span></div>`).join('');
+      els.summaryTotal.textContent = formatCurrency(price.total);
+    }
+
+    function validateBooking() {
+      if (!state.travelerName.trim()) return 'Enter traveler name';
+      if (!state.travelDate) return 'Select travel date';
+      if (!state.email.trim()) return 'Enter email';
+      if (!state.phone.trim()) return 'Enter phone';
+      return '';
+    }
+
+    function bookingPayload() {
+      const price = computeTotal();
+      return {
+        bookingId: `TRIP-${Date.now().toString().slice(-8)}`,
+        travelerName: state.travelerName,
+        travelDate: state.travelDate,
+        location: currentLocation().name,
+        hotel: selectedHotel().name,
+        food: selectedFood().name,
+        package: selectedPackage().name,
+        transport: selectedTransport().name,
+        travelers: state.travelers,
+        nights: state.nights,
+        email: state.email,
+        phone: state.phone,
+        specialRequest: state.specialRequest || 'None',
+        total: price.total,
+        createdAt: new Date().toLocaleString('en-IN', { dateStyle: 'medium', timeStyle: 'short' })
+      };
+    }
+
+    function renderBookings() {
+      if (!state.bookings.length) {
+        els.bookingsList.innerHTML = `<div class="list-card"><strong>No bookings yet</strong><p class="muted">Confirm one booking to see the generated ticket history here.</p></div>`;
+        return;
+      }
+      els.bookingsList.innerHTML = state.bookings.map(item => `
+        <article class="booking-item">
+          <div>
+            <h4>${item.bookingId} · ${item.location}</h4>
+            <p>${item.travelerName} · ${item.travelDate} · ${item.package}</p>
+          </div>
+          <div style="text-align:right;">
+            <strong>${formatCurrency(item.total)}</strong>
+            <p>${item.createdAt}</p>
+          </div>
+        </article>
+      `).join('');
+    }
+
+    async function generatePdfTicket(booking) {
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF();
+      doc.setFillColor(1, 105, 111);
+      doc.rect(0, 0, 210, 28, 'F');
+      doc.setTextColor(249, 248, 244);
+      doc.setFont('helvetica', 'bold');
+      doc.setFontSize(22);
+      doc.text('Roamly Trips Ticket', 14, 18);
+      doc.setTextColor(40, 37, 29);
+      doc.setFontSize(11);
+      doc.setFont('helvetica', 'normal');
+      doc.text(`Booking ID: ${booking.bookingId}`, 14, 38);
+      doc.text(`Created: ${booking.createdAt}`, 140, 38);
+      let y = 52;
+      const lines = [
+        ['Traveler', booking.travelerName],
+        ['Email', booking.email],
+        ['Phone', booking.phone],
+        ['Destination', booking.location],
+        ['Travel date', booking.travelDate],
+        ['Hotel', booking.hotel],
+        ['Food plan', booking.food],
+        ['Tour package', booking.package],
+        ['Transport', booking.transport],
+        ['Travelers', String(booking.travelers)],
+        ['Nights', String(booking.nights)],
+        ['Special request', booking.specialRequest],
+        ['Total paid', formatCurrency(booking.total)]
+      ];
+      lines.forEach(([label, value], idx) => {
+        if (idx % 2 === 0) { doc.setFillColor(247, 246, 242); doc.rect(12, y - 6, 186, 10, 'F'); }
+        doc.setFont('helvetica', 'bold'); doc.text(`${label}:`, 16, y);
+        doc.setFont('helvetica', 'normal');
+        const split = doc.splitTextToSize(String(value), 120);
+        doc.text(split, 58, y);
+        y += Math.max(10, split.length * 6);
+      });
+      doc.setDrawColor(212, 209, 202); doc.line(12, y + 4, 198, y + 4);
+      doc.setFont('helvetica', 'italic'); doc.setFontSize(10);
+      doc.text('Please carry this ticket and a valid ID during travel check-in.', 14, y + 14);
+      doc.save(`${booking.bookingId}.pdf`);
+    }
+
+    function bindInputs() {
+      els.locationSelect.onchange = e => { state.locationId = e.target.value; state.hotelId = ''; state.foodId = ''; state.packageId = ''; renderOptions(); renderSummary(); };
+      els.travelersCount.oninput = e => { state.travelers = Math.max(1, Number(e.target.value) || 1); renderSummary(); };
+      els.nightsCount.oninput = e => { state.nights = Math.max(1, Number(e.target.value) || 1); renderSummary(); };
+      els.travelerName.oninput = e => state.travelerName = e.target.value;
+      els.travelDate.oninput = e => state.travelDate = e.target.value;
+      els.specialRequest.oninput = e => state.specialRequest = e.target.value;
+      els.email.oninput = e => state.email = e.target.value;
+      els.phone.oninput = e => state.phone = e.target.value;
+      els.confirmBooking.onclick = async () => {
+        const error = validateBooking();
+        if (error) { alert(error); return; }
+        const booking = bookingPayload();
+        state.lastBooking = booking;
+        state.bookings.unshift(booking);
+        els.successBanner.classList.add('show');
+        els.downloadPdf.disabled = false;
+        renderBookings();
+        await generatePdfTicket(booking);
+      };
+      els.downloadPdf.onclick = async () => {
+        if (state.lastBooking) await generatePdfTicket(state.lastBooking);
+      };
+      els.resetBooking.onclick = () => {
+        state.travelerName = ''; state.travelDate = ''; state.travelers = 2; state.nights = 3; state.locationId = 'goa'; state.transportId = 'bus';
+        state.hotelId = ''; state.foodId = ''; state.packageId = ''; state.specialRequest = ''; state.email = ''; state.phone = ''; state.lastBooking = null;
+        els.travelerName.value = ''; els.travelDate.value = ''; els.travelersCount.value = 2; els.nightsCount.value = 3; els.specialRequest.value = ''; els.email.value = ''; els.phone.value = '';
+        els.successBanner.classList.remove('show'); els.downloadPdf.disabled = true; renderLocationSelect(); renderTransports(); renderOptions(); renderSummary();
+      };
+      els.menuToggle.onclick = () => els.sidebar.classList.toggle('open');
+      document.querySelectorAll('.nav-link').forEach(link => link.addEventListener('click', () => { document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active')); link.classList.add('active'); els.sidebar.classList.remove('open'); }));
+    }
+
+    (function themeInit() {
+      const toggle = document.querySelector('[data-theme-toggle]');
+      const root = document.documentElement;
+      let current = matchMedia('(prefers-color-scheme:dark)').matches ? 'dark' : 'light';
+      root.setAttribute('data-theme', current);
+      toggle.textContent = current === 'dark' ? '☀️' : '🌙';
+      toggle.onclick = () => {
+        current = current === 'dark' ? 'light' : 'dark';
+        root.setAttribute('data-theme', current);
+        toggle.textContent = current === 'dark' ? '☀️' : '🌙';
+      };
+    })();
+
+    renderStats();
+    renderLocationSelect();
+    renderTransports();
+    renderOptions();
+    renderSummary();
+    renderBookings();
+    bindInputs();
+  </script>
+</body>
+
+</html>

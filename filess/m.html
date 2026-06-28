@@ -1,0 +1,1623 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>m</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <style>
+    /* ===== RESET & BASE ===== */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #faf8f5;
+      --card: #ffffff;
+      --primary: #f59e0b;
+      --primary-dark: #d97706;
+      --secondary: #1d6fa4;
+      --secondary-dark: #155e8a;
+      --accent: #e8663a;
+      --foreground: #1a1f2e;
+      --muted: #6b7280;
+      --border: #e5e1d8;
+      --shadow: 0 4px 24px rgba(0,0,0,0.08);
+      --shadow-lg: 0 12px 48px rgba(0,0,0,0.14);
+      --radius: 14px;
+      --font-serif: Georgia, 'Times New Roman', serif;
+      --font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+    html { scroll-behavior: smooth; }
+    body {
+      font-family: var(--font-sans);
+      background: var(--bg);
+      color: var(--foreground);
+      min-height: 100vh;
+    }
+    a { text-decoration: none; color: inherit; cursor: pointer; }
+    img { display: block; max-width: 100%; }
+
+    /* ===== UTILITIES ===== */
+    .hidden { display: none !important; }
+    .page { display: none; }
+    .page.active { display: block; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 24px; }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+    .flex { display: flex; }
+    .flex-center { display: flex; align-items: center; justify-content: center; }
+    .flex-between { display: flex; align-items: center; justify-content: space-between; }
+    .gap-8 { gap: 8px; }
+    .gap-12 { gap: 12px; }
+    .gap-16 { gap: 16px; }
+    .gap-24 { gap: 24px; }
+    .text-center { text-align: center; }
+    .text-right { text-align: right; }
+    .mt-8 { margin-top: 8px; }
+    .mt-16 { margin-top: 16px; }
+    .mt-24 { margin-top: 24px; }
+    .mb-8 { margin-bottom: 8px; }
+    .mb-16 { margin-bottom: 16px; }
+    .mb-24 { margin-bottom: 24px; }
+
+    /* ===== BUTTONS ===== */
+    .btn {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 12px 24px; border-radius: 10px; border: none;
+      font-size: 15px; font-weight: 600; cursor: pointer;
+      transition: all 0.2s; outline: none;
+    }
+    .btn-primary {
+      background: var(--primary); color: #fff;
+    }
+    .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(245,158,11,0.35); }
+    .btn-secondary {
+      background: var(--secondary); color: #fff;
+    }
+    .btn-secondary:hover { background: var(--secondary-dark); transform: translateY(-1px); box-shadow: 0 4px 16px rgba(29,111,164,0.35); }
+    .btn-outline {
+      background: transparent; color: var(--foreground);
+      border: 2px solid var(--border);
+    }
+    .btn-outline:hover { border-color: var(--primary); color: var(--primary); }
+    .btn-lg { padding: 16px 36px; font-size: 16px; border-radius: 12px; }
+    .btn-sm { padding: 8px 16px; font-size: 13px; border-radius: 8px; }
+    .btn-icon { width: 40px; height: 40px; padding: 0; border-radius: 50%; }
+    .btn-accent { background: var(--accent); color: #fff; }
+    .btn-accent:hover { background: #d45525; transform: translateY(-1px); }
+
+    /* ===== NAV ===== */
+    .navbar {
+      position: sticky; top: 0; z-index: 100;
+      background: rgba(26,31,46,0.97);
+      backdrop-filter: blur(12px);
+      padding: 16px 0;
+    }
+    .navbar .container { display: flex; align-items: center; justify-content: space-between; }
+    .nav-logo {
+      font-family: var(--font-serif); font-size: 22px; font-weight: 700;
+      color: #fff; display: flex; align-items: center; gap: 10px; cursor: pointer;
+    }
+    .nav-logo span { color: var(--primary); }
+    .nav-links { display: flex; gap: 32px; }
+    .nav-link {
+      color: rgba(255,255,255,0.8); font-size: 14px; font-weight: 600;
+      letter-spacing: 0.08em; text-transform: uppercase; cursor: pointer;
+      transition: color 0.2s;
+    }
+    .nav-link:hover, .nav-link.active { color: var(--primary); }
+
+    /* ===== HOME HERO ===== */
+    .hero {
+      position: relative; height: 92vh; min-height: 580px;
+      display: flex; align-items: center; justify-content: center;
+      text-align: center; overflow: hidden;
+    }
+    .hero-bg {
+      position: absolute; inset: 0;
+      background: url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?w=1600&q=85') center/cover no-repeat;
+    }
+    .hero-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.38) 0%, rgba(0,0,0,0.55) 100%);
+    }
+    .hero-content { position: relative; z-index: 2; max-width: 780px; padding: 0 24px; }
+    .hero-tag {
+      display: inline-block; background: rgba(245,158,11,0.18);
+      border: 1px solid rgba(245,158,11,0.5); color: var(--primary);
+      font-size: 12px; font-weight: 700; letter-spacing: 0.15em; text-transform: uppercase;
+      padding: 6px 16px; border-radius: 100px; margin-bottom: 20px;
+    }
+    .hero h1 {
+      font-family: var(--font-serif); font-size: clamp(40px,6vw,72px);
+      font-weight: 700; color: #fff; line-height: 1.1; margin-bottom: 20px;
+    }
+    .hero h1 em { font-style: italic; color: var(--primary); }
+    .hero p {
+      font-size: clamp(16px,2vw,20px); color: rgba(255,255,255,0.85);
+      margin-bottom: 40px; line-height: 1.6;
+    }
+    .hero-search {
+      background: rgba(255,255,255,0.96); backdrop-filter: blur(8px);
+      border-radius: 16px; padding: 16px 20px;
+      display: flex; gap: 12px; align-items: center;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+    }
+    .hero-search input, .hero-search select {
+      flex: 1; border: none; background: transparent;
+      font-size: 15px; color: var(--foreground); outline: none; min-width: 0;
+    }
+    .hero-search input::placeholder { color: var(--muted); }
+    .search-divider { width: 1px; height: 32px; background: var(--border); flex-shrink: 0; }
+
+    /* ===== SECTION HEADINGS ===== */
+    .section { padding: 80px 0; }
+    .section-tag {
+      font-size: 12px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+      color: var(--primary); margin-bottom: 10px;
+    }
+    .section-title {
+      font-family: var(--font-serif); font-size: clamp(28px,4vw,44px);
+      font-weight: 700; color: var(--foreground); line-height: 1.2; margin-bottom: 16px;
+    }
+    .section-desc { font-size: 16px; color: var(--muted); line-height: 1.7; max-width: 560px; }
+
+    /* ===== DESTINATION CARD ===== */
+    .dest-card {
+      background: var(--card); border-radius: var(--radius); overflow: hidden;
+      box-shadow: var(--shadow); transition: transform 0.3s, box-shadow 0.3s; cursor: pointer;
+    }
+    .dest-card:hover { transform: translateY(-6px); box-shadow: var(--shadow-lg); }
+    .dest-card-img { height: 220px; overflow: hidden; position: relative; }
+    .dest-card-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.5s; }
+    .dest-card:hover .dest-card-img img { transform: scale(1.06); }
+    .dest-card-badge {
+      position: absolute; top: 12px; right: 12px;
+      background: rgba(0,0,0,0.55); color: #fff;
+      font-size: 12px; font-weight: 600; padding: 4px 10px; border-radius: 100px;
+      backdrop-filter: blur(4px);
+    }
+    .dest-card-body { padding: 20px; }
+    .dest-card-country { font-size: 12px; font-weight: 600; color: var(--primary); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
+    .dest-card-name { font-family: var(--font-serif); font-size: 20px; font-weight: 700; color: var(--foreground); margin-bottom: 6px; }
+    .dest-card-tag { font-size: 13px; color: var(--muted); line-height: 1.5; margin-bottom: 16px; }
+    .dest-card-footer { display: flex; align-items: center; justify-content: space-between; }
+    .dest-card-price { font-size: 13px; color: var(--muted); }
+    .dest-card-price strong { font-size: 18px; color: var(--foreground); font-weight: 700; }
+
+    /* ===== WHY SECTION ===== */
+    .why-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 32px; margin-top: 48px; }
+    .why-item { text-align: center; }
+    .why-icon {
+      width: 64px; height: 64px; border-radius: 18px;
+      background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px; font-size: 26px; color: #fff;
+    }
+    .why-item h3 { font-family: var(--font-serif); font-size: 20px; font-weight: 700; margin-bottom: 10px; }
+    .why-item p { color: var(--muted); font-size: 14px; line-height: 1.7; }
+
+    /* ===== DESTINATIONS PAGE ===== */
+    .dest-page-hero {
+      background: linear-gradient(135deg, var(--foreground) 0%, #2d3748 100%);
+      padding: 72px 0 56px; text-align: center;
+    }
+    .dest-page-hero h1 { font-family: var(--font-serif); font-size: 52px; font-weight: 700; color: #fff; margin-bottom: 12px; }
+    .dest-page-hero p { font-size: 18px; color: rgba(255,255,255,0.7); }
+    .dest-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 28px; }
+
+    /* ===== BOOKING PAGE ===== */
+    .booking-hero {
+      background: var(--foreground); padding: 24px 0; display: flex; align-items: center;
+    }
+    .booking-layout { display: flex; gap: 40px; align-items: flex-start; }
+    .booking-main { flex: 1; min-width: 0; }
+    .booking-sidebar { width: 380px; flex-shrink: 0; }
+
+    /* Steps */
+    .steps { display: flex; gap: 0; margin-bottom: 32px; border-radius: 14px; overflow: hidden; background: #eee; }
+    .step-btn {
+      flex: 1; padding: 14px 8px; border: none; background: transparent;
+      font-size: 14px; font-weight: 600; color: var(--muted); cursor: pointer;
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      transition: all 0.2s; position: relative;
+    }
+    .step-btn.active { background: #fff; color: var(--primary); box-shadow: 0 2px 12px rgba(0,0,0,0.1); }
+    .step-btn.done { color: #16a34a; }
+    .step-num {
+      width: 24px; height: 24px; border-radius: 50%;
+      background: var(--border); color: var(--muted);
+      font-size: 12px; font-weight: 700; display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .step-btn.active .step-num { background: var(--primary); color: #fff; }
+    .step-btn.done .step-num { background: #16a34a; color: #fff; }
+
+    /* Step panels */
+    .step-panel { display: none; }
+    .step-panel.active { display: block; }
+
+    /* Form */
+    .form-card {
+      background: var(--card); border-radius: var(--radius);
+      box-shadow: var(--shadow-lg); overflow: hidden;
+    }
+    .form-card-header { background: rgba(0,0,0,0.025); border-bottom: 1px solid var(--border); padding: 28px 32px; }
+    .form-card-header h2 { font-family: var(--font-serif); font-size: 26px; font-weight: 700; margin-bottom: 6px; }
+    .form-card-header p { color: var(--muted); font-size: 15px; }
+    .form-card-body { padding: 32px; }
+
+    .form-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; margin-bottom: 28px; }
+    .form-group { display: flex; flex-direction: column; gap: 8px; }
+    .form-label { font-size: 13px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.06em; }
+    .form-control {
+      height: 48px; padding: 0 16px; border: 2px solid var(--border);
+      border-radius: 10px; font-size: 15px; background: #fff;
+      color: var(--foreground); outline: none; transition: border-color 0.2s;
+      width: 100%;
+    }
+    .form-control:focus { border-color: var(--primary); }
+    .form-control.error { border-color: #ef4444; }
+    .field-error { font-size: 12px; color: #ef4444; font-weight: 500; }
+    .error-banner {
+      background: #fef2f2; border: 1px solid #fca5a5; color: #dc2626;
+      padding: 12px 16px; border-radius: 10px; font-size: 14px; font-weight: 500;
+      margin-bottom: 16px; display: none;
+    }
+    .error-banner.show { display: block; }
+
+    /* Radio options */
+    .radio-option {
+      border: 2px solid var(--border); border-radius: 12px; padding: 20px 24px;
+      cursor: pointer; transition: all 0.2s; background: #fff; margin-bottom: 12px;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .radio-option:hover { border-color: rgba(245,158,11,0.4); background: rgba(245,158,11,0.02); }
+    .radio-option.selected { border-color: var(--primary); background: rgba(245,158,11,0.06); box-shadow: 0 2px 12px rgba(245,158,11,0.15); }
+    .radio-option input[type="radio"] { display: none; }
+    .radio-custom {
+      width: 20px; height: 20px; border-radius: 50%; border: 2px solid var(--border);
+      flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+      transition: all 0.2s; margin-right: 16px;
+    }
+    .radio-option.selected .radio-custom { border-color: var(--primary); background: var(--primary); }
+    .radio-option.selected .radio-custom::after {
+      content: ''; width: 8px; height: 8px; border-radius: 50%; background: #fff;
+    }
+    .radio-inner { display: flex; align-items: center; flex: 1; }
+    .radio-info h4 { font-size: 16px; font-weight: 700; margin-bottom: 4px; }
+    .radio-info p { font-size: 13px; color: var(--muted); line-height: 1.5; }
+    .radio-stars { display: flex; gap: 2px; margin-top: 4px; }
+    .star { color: var(--primary); font-size: 12px; }
+    .radio-price { text-align: right; flex-shrink: 0; }
+    .radio-price .amount { font-size: 24px; font-weight: 800; color: var(--foreground); }
+    .radio-price .unit { font-size: 12px; color: var(--muted); display: block; }
+
+    /* Tour option */
+    .tour-option { flex-direction: column; align-items: flex-start; gap: 12px; }
+    .tour-option .tour-top { display: flex; width: 100%; }
+    .tour-option .radio-price { margin-top: 0; }
+    .tour-badge { font-size: 11px; font-weight: 700; background: rgba(245,158,11,0.12); color: var(--primary); padding: 3px 10px; border-radius: 100px; margin-left: 8px; }
+    .tour-highlights { font-size: 13px; color: var(--muted); line-height: 1.6; }
+
+    /* Step footer */
+    .step-footer {
+      display: flex; justify-content: space-between; align-items: center;
+      padding-top: 24px; border-top: 1px solid var(--border); margin-top: 8px;
+    }
+
+    /* Sidebar summary */
+    .sidebar-card {
+      background: var(--card); border-radius: var(--radius);
+      box-shadow: var(--shadow-lg); overflow: hidden; position: sticky; top: 80px;
+    }
+    .sidebar-img { height: 220px; position: relative; }
+    .sidebar-img img { width: 100%; height: 100%; object-fit: cover; }
+    .sidebar-img-overlay { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.7) 0%, transparent 50%); }
+    .sidebar-img-title { position: absolute; bottom: 16px; left: 20px; font-family: var(--font-serif); font-size: 22px; font-weight: 700; color: #fff; }
+    .sidebar-body { padding: 28px; }
+    .sidebar-label { font-size: 11px; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase; color: var(--muted); margin-bottom: 20px; display: block; }
+    .summary-row { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+    .summary-row-key { font-size: 14px; color: var(--muted); }
+    .summary-row-val { font-size: 14px; font-weight: 600; color: var(--foreground); text-align: right; max-width: 55%; }
+    .summary-divider { border: none; border-top: 1px solid var(--border); margin: 20px 0; }
+    .summary-total { display: flex; justify-content: space-between; align-items: flex-end; }
+    .summary-total-label { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: var(--muted); }
+    .summary-total-amount { font-family: var(--font-serif); font-size: 40px; font-weight: 700; color: var(--primary); }
+    .summary-note { font-size: 12px; color: var(--muted); text-align: right; margin-top: 4px; }
+
+    /* ===== CONFIRMATION PAGE ===== */
+    .confirmation-wrap {
+      max-width: 680px; margin: 60px auto 80px; padding: 0 24px;
+    }
+    .confirm-card {
+      background: var(--card); border-radius: 20px;
+      box-shadow: 0 20px 80px rgba(0,0,0,0.12); overflow: hidden;
+    }
+    .confirm-header {
+      background: linear-gradient(135deg, var(--secondary) 0%, #1a5a8a 100%);
+      padding: 48px 40px; text-align: center; position: relative; overflow: hidden;
+    }
+    .confirm-header::before {
+      content: ''; position: absolute; top: -40px; right: -40px;
+      width: 200px; height: 200px; border-radius: 50%;
+      background: rgba(255,255,255,0.06);
+    }
+    .confirm-badge {
+      width: 72px; height: 72px; border-radius: 50%;
+      background: rgba(255,255,255,0.15); border: 3px solid rgba(255,255,255,0.4);
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 20px; font-size: 32px;
+    }
+    .confirm-header h2 { font-family: var(--font-serif); font-size: 32px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+    .confirm-header p { font-size: 15px; color: rgba(255,255,255,0.75); }
+    .confirm-ref {
+      display: inline-block; background: rgba(255,255,255,0.15);
+      border: 1px solid rgba(255,255,255,0.35); color: #fff;
+      font-size: 18px; font-weight: 700; letter-spacing: 0.1em;
+      padding: 8px 24px; border-radius: 100px; margin-top: 16px;
+    }
+    .confirm-body { padding: 40px; }
+    .confirm-section { margin-bottom: 32px; }
+    .confirm-section-title {
+      font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.14em;
+      color: var(--primary); margin-bottom: 16px; padding-bottom: 8px;
+      border-bottom: 2px solid rgba(245,158,11,0.2);
+    }
+    .confirm-row { display: flex; justify-content: space-between; align-items: flex-start; padding: 10px 0; border-bottom: 1px solid var(--border); }
+    .confirm-row:last-child { border-bottom: none; }
+    .confirm-key { font-size: 14px; color: var(--muted); }
+    .confirm-val { font-size: 14px; font-weight: 600; color: var(--foreground); text-align: right; max-width: 60%; }
+    .confirm-total-row { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; background: rgba(245,158,11,0.07); border-radius: 12px; margin: 24px 0; }
+    .confirm-total-label { font-size: 14px; font-weight: 600; color: var(--foreground); }
+    .confirm-total-amount { font-family: var(--font-serif); font-size: 36px; font-weight: 700; color: var(--primary); }
+    .confirm-actions { display: flex; gap: 12px; flex-wrap: wrap; }
+    .confirm-actions .btn { flex: 1; justify-content: center; min-width: 160px; }
+
+    /* ===== FOOTER ===== */
+    footer {
+      background: var(--foreground); color: rgba(255,255,255,0.65);
+      padding: 48px 0 24px; margin-top: 80px;
+    }
+    .footer-grid { display: grid; grid-template-columns: 2fr 1fr 1fr; gap: 40px; margin-bottom: 40px; }
+    .footer-brand h3 { font-family: var(--font-serif); font-size: 22px; color: #fff; margin-bottom: 10px; }
+    .footer-brand h3 span { color: var(--primary); }
+    .footer-brand p { font-size: 14px; line-height: 1.7; }
+    .footer-col h4 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color: #fff; margin-bottom: 16px; }
+    .footer-col ul { list-style: none; }
+    .footer-col ul li { margin-bottom: 10px; }
+    .footer-col ul li a { font-size: 14px; transition: color 0.2s; cursor: pointer; }
+    .footer-col ul li a:hover { color: var(--primary); }
+    .footer-bottom { border-top: 1px solid rgba(255,255,255,0.1); padding-top: 24px; text-align: center; font-size: 13px; }
+
+    /* ===== MODAL ===== */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+      backdrop-filter: blur(4px); z-index: 999;
+      display: flex; align-items: center; justify-content: center;
+      padding: 24px; opacity: 0; visibility: hidden; transition: all 0.3s;
+    }
+    .modal-overlay.show { opacity: 1; visibility: visible; }
+    .modal {
+      background: #fff; border-radius: 20px; max-width: 480px; width: 100%;
+      padding: 40px; box-shadow: 0 24px 80px rgba(0,0,0,0.2);
+      transform: scale(0.9); transition: transform 0.3s;
+    }
+    .modal-overlay.show .modal { transform: scale(1); }
+    .modal h3 { font-family: var(--font-serif); font-size: 26px; margin-bottom: 10px; }
+    .modal p { color: var(--muted); font-size: 15px; line-height: 1.6; margin-bottom: 28px; }
+    .modal .form-group { margin-bottom: 16px; }
+
+    /* ===== TOAST ===== */
+    .toast-wrap { position: fixed; bottom: 32px; right: 32px; z-index: 9999; display: flex; flex-direction: column; gap: 10px; }
+    .toast {
+      background: #fff; border-left: 4px solid var(--primary);
+      padding: 16px 20px; border-radius: 12px; box-shadow: 0 8px 32px rgba(0,0,0,0.14);
+      font-size: 14px; font-weight: 500; min-width: 280px;
+      animation: slideIn 0.3s ease; display: flex; align-items: center; gap: 12px;
+    }
+    .toast.success { border-color: #16a34a; }
+    .toast.error { border-color: #ef4444; }
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    /* ===== RESPONSIVE ===== */
+    @media (max-width: 900px) {
+      .booking-layout { flex-direction: column; }
+      .booking-sidebar { width: 100%; }
+      .sidebar-card { position: static; }
+      .footer-grid { grid-template-columns: 1fr 1fr; }
+      .grid-3, .grid-4 { grid-template-columns: repeat(2, 1fr); }
+      .why-grid { grid-template-columns: 1fr; }
+      .form-row { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 580px) {
+      .hero-search { flex-direction: column; gap: 10px; }
+      .search-divider { display: none; }
+      .hero-search input, .hero-search select { width: 100%; }
+      .grid-2, .grid-3, .grid-4 { grid-template-columns: 1fr; }
+      .footer-grid { grid-template-columns: 1fr; }
+      .steps .step-btn span.step-label { display: none; }
+      .confirm-actions { flex-direction: column; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ===== NAVBAR ===== -->
+<nav class="navbar" id="navbar">
+  <div class="container">
+    <div class="nav-logo" onclick="navigate('home')">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--primary)"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20A14.5 14.5 0 0 0 12 2"/><path d="M2 12h20"/></svg>
+      Wander<span>Lux</span>
+    </div>
+    <div class="nav-links">
+      <span class="nav-link active" id="nav-home" onclick="navigate('home')">Home</span>
+      <span class="nav-link" id="nav-destinations" onclick="navigate('destinations')">Destinations</span>
+      <span class="nav-link" id="nav-booking" onclick="navigate('booking')" style="display:none" id="nav-booking">Book Now</span>
+    </div>
+  </div>
+</nav>
+
+<!-- ===== PAGE: HOME ===== -->
+<div id="page-home" class="page active">
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-overlay"></div>
+    <div class="hero-content">
+      <div class="hero-tag">Premium Travel Experiences</div>
+      <h1>Discover Your <em>Next</em> Adventure</h1>
+      <p>Curated luxury travel experiences designed for the modern explorer. Hotels, dining, and tours — all in one booking.</p>
+      <div class="hero-search">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+        <input type="text" placeholder="Where to?" id="hero-dest-input" />
+        <div class="search-divider"></div>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+        <input type="date" id="hero-date-input" />
+        <div class="search-divider"></div>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <select id="hero-guests-select">
+          <option value="">Guests</option>
+          <option>1 Guest</option>
+          <option>2 Guests</option>
+          <option>3 Guests</option>
+          <option>4+ Guests</option>
+        </select>
+        <button class="btn btn-primary" onclick="handleHeroSearch()">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+          Explore
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Featured Destinations -->
+  <section class="section">
+    <div class="container">
+      <div class="text-center mb-24" style="margin-bottom:48px">
+        <p class="section-tag">Popular Right Now</p>
+        <h2 class="section-title">Featured Destinations</h2>
+        <p class="section-desc" style="margin:0 auto">Handpicked destinations loved by thousands of travelers. Each with curated hotels, dining, and unique experiences.</p>
+      </div>
+      <div class="dest-grid" id="featured-grid"></div>
+      <div class="text-center mt-24" style="margin-top:48px">
+        <button class="btn btn-outline btn-lg" onclick="navigate('destinations')">
+          View All Destinations
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Why WanderLux -->
+  <section class="section" style="background:#fff; padding:80px 0">
+    <div class="container">
+      <div class="text-center">
+        <p class="section-tag">Why Choose Us</p>
+        <h2 class="section-title">The WanderLux Difference</h2>
+      </div>
+      <div class="why-grid">
+        <div class="why-item">
+          <div class="why-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <h3>Trusted &amp; Secure</h3>
+          <p>Every property and tour is vetted by our travel experts. Your safety and satisfaction are our top priority.</p>
+        </div>
+        <div class="why-item">
+          <div class="why-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          </div>
+          <h3>24/7 Support</h3>
+          <p>Our concierge team is available around the clock. Whether it's a question or an emergency, we have you covered.</p>
+        </div>
+        <div class="why-item">
+          <div class="why-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m12 2 3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          </div>
+          <h3>Premium Quality</h3>
+          <p>We partner only with the finest hotels, restaurants, and tour operators to guarantee an exceptional experience.</p>
+        </div>
+        <div class="why-item">
+          <div class="why-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </div>
+          <h3>Best Price Guarantee</h3>
+          <p>Find a lower price anywhere else and we'll match it. We believe luxury travel should be accessible to everyone.</p>
+        </div>
+        <div class="why-item">
+          <div class="why-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+          </div>
+          <h3>Instant Tickets</h3>
+          <p>Booking confirmed? Download your travel ticket instantly as a professional PDF, ready for check-in anywhere.</p>
+        </div>
+        <div class="why-item">
+          <div class="why-icon">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          </div>
+          <h3>All-in-One Booking</h3>
+          <p>Hotel, meals, and tours in a single seamless booking. No juggling multiple sites or apps.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ===== PAGE: DESTINATIONS ===== -->
+<div id="page-destinations" class="page">
+  <div class="dest-page-hero">
+    <div class="container">
+      <p class="section-tag">Explore the World</p>
+      <h1>All Destinations</h1>
+      <p>Choose your perfect getaway from our curated collection of world-class destinations.</p>
+    </div>
+  </div>
+  <section class="section">
+    <div class="container">
+      <div class="dest-grid" id="all-dest-grid"></div>
+    </div>
+  </section>
+</div>
+
+<!-- ===== PAGE: BOOKING ===== -->
+<div id="page-booking" class="page">
+  <div class="booking-hero">
+    <div class="container" style="display:flex;align-items:center;gap:12px">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--primary)" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20A14.5 14.5 0 0 0 12 2"/><path d="M2 12h20"/></svg>
+      <span style="font-family:var(--font-serif);font-size:20px;font-weight:700;color:#fff">WanderLux</span>
+    </div>
+  </div>
+
+  <section class="section" style="padding:48px 0 80px">
+    <div class="container">
+      <div class="mb-16">
+        <h1 class="section-title" id="booking-dest-title" style="font-size:36px">Journey to ...</h1>
+        <p class="section-desc" id="booking-dest-tagline"></p>
+      </div>
+
+      <div class="booking-layout">
+        <!-- Main Form -->
+        <div class="booking-main">
+          <!-- Steps nav -->
+          <div class="steps">
+            <button class="step-btn active" id="step-btn-1" onclick="switchStep(1)">
+              <span class="step-num">1</span>
+              <span class="step-label">Hotel</span>
+            </button>
+            <button class="step-btn" id="step-btn-2" onclick="switchStep(2)">
+              <span class="step-num">2</span>
+              <span class="step-label">Dining</span>
+            </button>
+            <button class="step-btn" id="step-btn-3" onclick="switchStep(3)">
+              <span class="step-num">3</span>
+              <span class="step-label">Experiences</span>
+            </button>
+          </div>
+
+          <!-- STEP 1: Hotel -->
+          <div class="step-panel active" id="step-panel-1">
+            <div class="form-card">
+              <div class="form-card-header">
+                <h2>Accommodation</h2>
+                <p>Choose from our hand-picked luxury properties</p>
+              </div>
+              <div class="form-card-body">
+                <div class="form-row">
+                  <div class="form-group">
+                    <label class="form-label">Check-in Date</label>
+                    <input type="date" class="form-control" id="checkin" oninput="updateSummary()" />
+                    <span class="field-error" id="err-checkin"></span>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Check-out Date</label>
+                    <input type="date" class="form-control" id="checkout" oninput="updateSummary()" />
+                    <span class="field-error" id="err-checkout"></span>
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Number of Guests</label>
+                    <input type="number" class="form-control" id="guests" value="1" min="1" max="20" oninput="updateSummary()" />
+                    <span class="field-error" id="err-guests"></span>
+                  </div>
+                </div>
+
+                <div class="form-group">
+                  <label class="form-label" style="margin-bottom:12px">Select Hotel</label>
+                  <span class="field-error" id="err-hotel" style="margin-bottom:8px;display:block"></span>
+                  <div id="hotel-options"></div>
+                </div>
+
+                <div class="error-banner" id="err-banner-1">Please complete all fields above before continuing.</div>
+                <div class="step-footer">
+                  <div></div>
+                  <button class="btn btn-primary btn-lg" onclick="goStep2()">
+                    Next Step
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 2: Food -->
+          <div class="step-panel" id="step-panel-2">
+            <div class="form-card">
+              <div class="form-card-header">
+                <h2>Dining Plan</h2>
+                <p>Enjoy world-class culinary experiences tailored to you</p>
+              </div>
+              <div class="form-card-body">
+                <label class="form-label" style="margin-bottom:12px">Select a Meal Plan</label>
+                <span class="field-error" id="err-meal" style="margin-bottom:8px;display:block"></span>
+                <div id="meal-options"></div>
+                <div class="error-banner" id="err-banner-2">Please select a dining plan before continuing.</div>
+                <div class="step-footer">
+                  <button class="btn btn-outline btn-lg" onclick="switchStep(1)">Back</button>
+                  <button class="btn btn-primary btn-lg" onclick="goStep3()">
+                    Next Step
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- STEP 3: Tour + Guest Name -->
+          <div class="step-panel" id="step-panel-3">
+            <div class="form-card">
+              <div class="form-card-header">
+                <h2>Experiences</h2>
+                <p>Curated tours to make your trip unforgettable</p>
+              </div>
+              <div class="form-card-body">
+                <label class="form-label" style="margin-bottom:12px">Select a Tour Package</label>
+                <span class="field-error" id="err-tour" style="margin-bottom:8px;display:block"></span>
+                <div id="tour-options"></div>
+
+                <div class="form-group" style="margin-top:28px;padding-top:24px;border-top:1px solid var(--border)">
+                  <label class="form-label">Lead Guest Name (as per passport)</label>
+                  <input type="text" class="form-control" id="guest-name" placeholder="Full Name" style="height:56px;font-size:16px" oninput="updateSummary()" />
+                  <span class="field-error" id="err-name"></span>
+                </div>
+
+                <div class="error-banner" id="err-banner-3">Please complete all fields to confirm your booking.</div>
+                <div class="step-footer">
+                  <button class="btn btn-outline btn-lg" onclick="switchStep(2)">Back</button>
+                  <button class="btn btn-secondary btn-lg" onclick="confirmBooking()">
+                    Confirm Booking
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar -->
+        <div class="booking-sidebar">
+          <div class="sidebar-card">
+            <div class="sidebar-img">
+              <img id="sidebar-img" src="" alt="" />
+              <div class="sidebar-img-overlay"></div>
+              <h3 class="sidebar-img-title" id="sidebar-dest-name"></h3>
+            </div>
+            <div class="sidebar-body">
+              <span class="sidebar-label">Booking Summary</span>
+              <div id="summary-rows"></div>
+              <hr class="summary-divider" />
+              <div class="summary-total">
+                <div>
+                  <div class="summary-total-label">Total Expected</div>
+                  <div class="summary-note">Taxes &amp; fees included</div>
+                </div>
+                <div class="summary-total-amount" id="summary-total">$0</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ===== PAGE: CONFIRMATION ===== -->
+<div id="page-confirmation" class="page">
+  <div class="confirmation-wrap">
+    <div class="confirm-card">
+      <div class="confirm-header">
+        <div class="confirm-badge">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+        <h2>Booking Confirmed!</h2>
+        <p>Your dream trip is all set. Get ready for an unforgettable experience.</p>
+        <div class="confirm-ref" id="conf-ref">WLX-XXXX</div>
+      </div>
+      <div class="confirm-body">
+        <div class="confirm-section">
+          <div class="confirm-section-title">Traveler Details</div>
+          <div class="confirm-row"><span class="confirm-key">Guest Name</span><span class="confirm-val" id="conf-name"></span></div>
+          <div class="confirm-row"><span class="confirm-key">Destination</span><span class="confirm-val" id="conf-dest"></span></div>
+          <div class="confirm-row"><span class="confirm-key">Check-in</span><span class="confirm-val" id="conf-checkin"></span></div>
+          <div class="confirm-row"><span class="confirm-key">Check-out</span><span class="confirm-val" id="conf-checkout"></span></div>
+          <div class="confirm-row"><span class="confirm-key">Guests</span><span class="confirm-val" id="conf-guests"></span></div>
+        </div>
+        <div class="confirm-section">
+          <div class="confirm-section-title">Booking Details</div>
+          <div class="confirm-row"><span class="confirm-key">Hotel</span><span class="confirm-val" id="conf-hotel"></span></div>
+          <div class="confirm-row"><span class="confirm-key">Meal Plan</span><span class="confirm-val" id="conf-meal"></span></div>
+          <div class="confirm-row"><span class="confirm-key">Tour Package</span><span class="confirm-val" id="conf-tour"></span></div>
+          <div class="confirm-row"><span class="confirm-key">Duration</span><span class="confirm-val" id="conf-duration"></span></div>
+        </div>
+        <div class="confirm-total-row">
+          <span class="confirm-total-label">Total Amount Payable</span>
+          <span class="confirm-total-amount" id="conf-total"></span>
+        </div>
+        <div class="confirm-actions">
+          <button class="btn btn-primary btn-lg" onclick="downloadPDF()">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download Ticket PDF
+          </button>
+          <button class="btn btn-outline btn-lg" onclick="navigate('destinations')">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 2a14.5 14.5 0 0 0 0 20A14.5 14.5 0 0 0 12 2"/><path d="M2 12h20"/></svg>
+            Book Another Trip
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== FOOTER ===== -->
+<footer id="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <h3>Wander<span>Lux</span></h3>
+        <p>Premium travel experiences crafted for the modern explorer. We handle the details so you can focus on the memories.</p>
+      </div>
+      <div class="footer-col">
+        <h4>Explore</h4>
+        <ul>
+          <li><a onclick="navigate('destinations')">All Destinations</a></li>
+          <li><a onclick="navigate('home')">Featured Trips</a></li>
+          <li><a onclick="navigate('home')">Luxury Hotels</a></li>
+          <li><a onclick="navigate('home')">Tour Packages</a></li>
+        </ul>
+      </div>
+      <div class="footer-col">
+        <h4>Company</h4>
+        <ul>
+          <li><a>About Us</a></li>
+          <li><a>Contact</a></li>
+          <li><a>Privacy Policy</a></li>
+          <li><a>Terms of Service</a></li>
+        </ul>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2026 WanderLux Travels. All rights reserved. Crafted with care for travelers worldwide.</p>
+    </div>
+  </div>
+</footer>
+
+<!-- Toast container -->
+<div class="toast-wrap" id="toast-wrap"></div>
+
+<script>
+// ===== DATA =====
+const MEAL_PLANS = [
+  { id: 'breakfast', name: 'Breakfast Only', desc: 'Start your day right with a gourmet continental breakfast', price_per_day: 15 },
+  { id: 'halfboard', name: 'Half Board', desc: 'Breakfast and a sumptuous dinner included each day', price_per_day: 35 },
+  { id: 'fullboard', name: 'Full Board', desc: 'All three meals daily — breakfast, lunch, and dinner', price_per_day: 55 }
+];
+
+const DESTINATIONS = [
+  {
+    id: 'paris',
+    name: 'Paris', country: 'France',
+    tagline: 'The City of Light awaits — romance, art, and world-class cuisine.',
+    image: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=800&q=80',
+    from_price: 189,
+    hotels: [
+      { id: 'h1', name: 'Le Grand Palais Hotel', stars: 5, price_per_night: 320, amenities: ['Rooftop Pool', 'Michelin Restaurant', 'Spa', 'City Views'] },
+      { id: 'h2', name: 'Maison Montmartre Boutique', stars: 4, price_per_night: 189, amenities: ['Free Breakfast', 'Art Gallery', 'Garden Terrace'] },
+      { id: 'h3', name: 'Riviera Seine Hotel', stars: 3, price_per_night: 110, amenities: ['River Views', 'Free WiFi', 'Cafe & Bar'] }
+    ],
+    tours: [
+      { id: 't1', name: 'Classic Paris Icons', duration: '2 days', price_per_person: 180, highlights: ['Eiffel Tower', 'Louvre Museum', 'Notre-Dame', 'Seine River Cruise'] },
+      { id: 't2', name: 'Versailles & Countryside', duration: '1 day', price_per_person: 120, highlights: ['Palace of Versailles', 'Marie Antoinette Estate', 'French Countryside'] },
+      { id: 't3', name: 'Culinary Paris', duration: '3 days', price_per_person: 260, highlights: ['Cooking Classes', 'Wine Tasting', 'Market Tour', 'Chef Dinner'] }
+    ]
+  },
+  {
+    id: 'bali',
+    name: 'Bali', country: 'Indonesia',
+    tagline: 'Tropical paradise with ancient temples, rice terraces, and turquoise waves.',
+    image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=800&q=80',
+    from_price: 145,
+    hotels: [
+      { id: 'h1', name: 'Ubud Jungle Resort', stars: 5, price_per_night: 280, amenities: ['Infinity Pool', 'Yoga Pavilion', 'Jungle Spa', 'Organic Farm'] },
+      { id: 'h2', name: 'Seminyak Beach Villas', stars: 4, price_per_night: 195, amenities: ['Private Pool', 'Beach Access', 'Sunset Bar'] },
+      { id: 'h3', name: 'Kuta Garden Inn', stars: 3, price_per_night: 75, amenities: ['Pool', 'Free WiFi', 'Breakfast Included'] }
+    ],
+    tours: [
+      { id: 't1', name: 'Temple & Culture Trail', duration: '2 days', price_per_person: 140, highlights: ['Tanah Lot', 'Uluwatu Temple', 'Kecak Dance', 'Rice Terraces'] },
+      { id: 't2', name: 'Surf & Adventure', duration: '3 days', price_per_person: 200, highlights: ['Surfing Lessons', 'White Water Rafting', 'ATV Ride', 'Waterfall Trek'] },
+      { id: 't3', name: 'Wellness Retreat', duration: '4 days', price_per_person: 320, highlights: ['Sunrise Yoga', 'Balinese Massage', 'Cooking Class', 'Meditation'] }
+    ]
+  },
+  {
+    id: 'maldives',
+    name: 'Maldives', country: 'Maldives',
+    tagline: 'Crystal lagoons, overwater bungalows, and the world\'s most pristine beaches.',
+    image: 'https://images.unsplash.com/photo-1514282401047-d79a71a590e8?w=800&q=80',
+    from_price: 420,
+    hotels: [
+      { id: 'h1', name: 'Velaa Private Island', stars: 5, price_per_night: 850, amenities: ['Overwater Villa', 'Private Beach', 'Underwater Restaurant', 'Butler Service'] },
+      { id: 'h2', name: 'Cocoon Maldives', stars: 4, price_per_night: 520, amenities: ['Lagoon Bungalow', 'Water Sports', 'Spa', 'All-Inclusive'] },
+      { id: 'h3', name: 'Cinnamon Hakuraa', stars: 3, price_per_night: 280, amenities: ['Beachfront Room', 'Snorkeling', 'Restaurant'] }
+    ],
+    tours: [
+      { id: 't1', name: 'Underwater Paradise', duration: '2 days', price_per_person: 280, highlights: ['Scuba Diving', 'Manta Ray Snorkeling', 'Reef Exploration', 'Night Dive'] },
+      { id: 't2', name: 'Island Hopping', duration: '1 day', price_per_person: 150, highlights: ['5 Local Islands', 'Sandbank Picnic', 'Sunset Cruise', 'Dolphin Watching'] },
+      { id: 't3', name: 'Seaplane Discovery', duration: '3 days', price_per_person: 450, highlights: ['Seaplane Transfers', 'Deserted Island', 'Shark Feeding', 'Fishermen Village'] }
+    ]
+  },
+  {
+    id: 'tokyo',
+    name: 'Tokyo', country: 'Japan',
+    tagline: 'Where ancient tradition meets futuristic innovation in a city unlike any other.',
+    image: 'https://images.unsplash.com/photo-1536098561742-ca998e48cbcc?w=800&q=80',
+    from_price: 210,
+    hotels: [
+      { id: 'h1', name: 'The Peninsula Tokyo', stars: 5, price_per_night: 460, amenities: ['Imperial Palace Views', 'Rooftop Bar', 'Peter Restaurant', 'Spa'] },
+      { id: 'h2', name: 'Shinjuku Granbell Hotel', stars: 4, price_per_night: 230, amenities: ['Central Location', 'Free WiFi', 'Sky Lounge', 'Modern Design'] },
+      { id: 'h3', name: 'Asakusa Traditional Inn', stars: 3, price_per_night: 120, amenities: ['Onsen Bath', 'Traditional Breakfast', 'Temple Views'] }
+    ],
+    tours: [
+      { id: 't1', name: 'Tokyo Highlights', duration: '3 days', price_per_person: 220, highlights: ['Shibuya Crossing', 'Senso-ji Temple', 'Akihabara', 'Mt. Fuji View'] },
+      { id: 't2', name: 'Kyoto Day Trip', duration: '1 day', price_per_person: 160, highlights: ['Bullet Train', 'Fushimi Inari', 'Arashiyama', 'Tea Ceremony'] },
+      { id: 't3', name: 'Food & Markets Tour', duration: '2 days', price_per_person: 190, highlights: ['Tsukiji Market', 'Ramen School', 'Izakaya Tour', 'Sake Tasting'] }
+    ]
+  },
+  {
+    id: 'dubai',
+    name: 'Dubai', country: 'UAE',
+    tagline: 'Soaring skyscrapers, golden deserts, and the most extravagant luxury on earth.',
+    image: 'https://images.unsplash.com/photo-1512453979798-5ea266f8880c?w=800&q=80',
+    from_price: 250,
+    hotels: [
+      { id: 'h1', name: 'Burj Al Arab Jumeirah', stars: 5, price_per_night: 980, amenities: ['Helipad', 'Private Beach', 'Gold-plated Interiors', 'Butler Service'] },
+      { id: 'h2', name: 'Atlantis The Palm', stars: 5, price_per_night: 520, amenities: ['Aquaventure Waterpark', 'Private Beach', 'Marine Life'] },
+      { id: 'h3', name: 'JW Marriott Marina', stars: 4, price_per_night: 250, amenities: ['Marina Views', 'Pool', 'Fitness Center', 'Multiple Restaurants'] }
+    ],
+    tours: [
+      { id: 't1', name: 'Desert Safari Experience', duration: '1 day', price_per_person: 130, highlights: ['Dune Bashing', 'Camel Ride', 'Bedouin Camp', 'BBQ Dinner'] },
+      { id: 't2', name: 'City Wonders Tour', duration: '2 days', price_per_person: 200, highlights: ['Burj Khalifa Top', 'Gold Souk', 'Spice Market', 'Dubai Frame'] },
+      { id: 't3', name: 'Luxury Yacht Cruise', duration: '1 day', price_per_person: 290, highlights: ['Private Yacht', 'Marina Views', 'Seafood Lunch', 'Snorkeling'] }
+    ]
+  },
+  {
+    id: 'santorini',
+    name: 'Santorini', country: 'Greece',
+    tagline: 'Iconic blue domes, volcanic cliffs, and the most breathtaking sunsets in the world.',
+    image: 'https://images.unsplash.com/photo-1570077188670-e3a8d69ac5ff?w=800&q=80',
+    from_price: 230,
+    hotels: [
+      { id: 'h1', name: 'Canaves Oia Suites', stars: 5, price_per_night: 680, amenities: ['Caldera Views', 'Infinity Pool', 'Cave Suite', 'Private Terrace'] },
+      { id: 'h2', name: 'Anastasis Apartments', stars: 4, price_per_night: 340, amenities: ['Volcanic Views', 'Pool', 'Breakfast Terrace', 'Central Location'] },
+      { id: 'h3', name: 'Fira Classic Hotel', stars: 3, price_per_night: 180, amenities: ['Sea Views', 'Free WiFi', 'Bar', 'Airport Transfers'] }
+    ],
+    tours: [
+      { id: 't1', name: 'Oia Sunset Experience', duration: '1 day', price_per_person: 90, highlights: ['Oia Village Walk', 'Blue Dome Churches', 'Sunset View', 'Wine Tasting'] },
+      { id: 't2', name: 'Catamaran Cruise', duration: '1 day', price_per_person: 160, highlights: ['Caldera Sailing', 'Hot Springs', 'Red Beach', 'BBQ on Board'] },
+      { id: 't3', name: 'Aegean Island Explorer', duration: '3 days', price_per_person: 380, highlights: ['Mykonos Day', 'Volcanic Hike', 'Akrotiri Ruins', 'Sea Kayaking'] }
+    ]
+  },
+  {
+    id: 'newyork',
+    name: 'New York', country: 'USA',
+    tagline: 'The city that never sleeps — culture, Broadway, world-class food, and limitless energy.',
+    image: 'https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?w=800&q=80',
+    from_price: 195,
+    hotels: [
+      { id: 'h1', name: 'The Plaza Hotel', stars: 5, price_per_night: 750, amenities: ['Central Park Views', 'Eloise at the Plaza', 'Todd English Food Hall', 'Iconic Landmark'] },
+      { id: 'h2', name: 'The Moxy Times Square', stars: 4, price_per_night: 290, amenities: ['Rooftop Bar', 'Central Location', 'Modern Design', 'Free WiFi'] },
+      { id: 'h3', name: 'Pod 51 Hotel', stars: 3, price_per_night: 150, amenities: ['Compact Luxury', 'Free WiFi', 'Rooftop Lounge', 'Midtown Location'] }
+    ],
+    tours: [
+      { id: 't1', name: 'NYC Signature Tour', duration: '3 days', price_per_person: 250, highlights: ['Statue of Liberty', 'Central Park', 'Empire State', 'Brooklyn Bridge'] },
+      { id: 't2', name: 'Broadway & Culture', duration: '2 days', price_per_person: 320, highlights: ['Broadway Show', 'MoMA', 'High Line', 'Chelsea Market'] },
+      { id: 't3', name: 'Food Borough Tour', duration: '1 day', price_per_person: 120, highlights: ['Smorgasburg', 'Pizza Tour', 'Little Italy', 'Chinatown Walk'] }
+    ]
+  },
+  {
+    id: 'swissalps',
+    name: 'Swiss Alps', country: 'Switzerland',
+    tagline: 'Majestic peaks, pristine lakes, chocolate, and the world\'s most scenic rail journeys.',
+    image: 'https://images.unsplash.com/photo-1531366936337-7c912a4589a7?w=800&q=80',
+    from_price: 310,
+    hotels: [
+      { id: 'h1', name: 'Badrutt\'s Palace St. Moritz', stars: 5, price_per_night: 890, amenities: ['Mountain Views', 'Ski-in/Ski-out', 'Award Spa', 'Fine Dining'] },
+      { id: 'h2', name: 'Interlaken Grand Hotel', stars: 4, price_per_night: 420, amenities: ['Jungfrau Views', 'Indoor Pool', 'Wellness', 'Central'] },
+      { id: 'h3', name: 'Zermatt Alpine Lodge', stars: 3, price_per_night: 220, amenities: ['Matterhorn Views', 'Ski Storage', 'Hearty Breakfast'] }
+    ],
+    tours: [
+      { id: 't1', name: 'Jungfraujoch & Peaks', duration: '2 days', price_per_person: 380, highlights: ['Top of Europe', 'Aletsch Glacier', 'Cable Cars', 'Alpine Hike'] },
+      { id: 't2', name: 'Swiss Scenic Rail', duration: '3 days', price_per_person: 520, highlights: ['Glacier Express', 'Bernina Express', 'Lucerne Day', 'Rhine Falls'] },
+      { id: 't3', name: 'Winter Sports Package', duration: '4 days', price_per_person: 680, highlights: ['Ski Lessons', 'Snowboarding', 'Ice Skating', 'Après-Ski'] }
+    ]
+  },
+  {
+    id: 'capetown',
+    name: 'Cape Town', country: 'South Africa',
+    tagline: 'Where mountain meets ocean — a city of extraordinary diversity and natural drama.',
+    image: 'https://images.unsplash.com/photo-1580060839134-75a5edca2e99?w=800&q=80',
+    from_price: 175,
+    hotels: [
+      { id: 'h1', name: 'The Silo Hotel', stars: 5, price_per_night: 540, amenities: ['V&A Waterfront', 'Rooftop Pool', 'Art Gallery', 'Table Mountain Views'] },
+      { id: 'h2', name: 'Cape Grace Hotel', stars: 4, price_per_night: 320, amenities: ['Marina Location', 'Spa', 'Bascule Whisky Bar', 'Yacht Access'] },
+      { id: 'h3', name: 'Camps Bay Village Inn', stars: 3, price_per_night: 145, amenities: ['Beach Access', 'Mountain Views', 'Pool', 'Free WiFi'] }
+    ],
+    tours: [
+      { id: 't1', name: 'Cape Peninsula Drive', duration: '1 day', price_per_person: 95, highlights: ['Cape Point', 'Boulders Penguins', 'Chapman\'s Peak', 'Hout Bay'] },
+      { id: 't2', name: 'Winelands & Safari', duration: '3 days', price_per_person: 420, highlights: ['Stellenbosch Wine', 'Big Five Safari', 'Franschhoek', 'Garden Route'] },
+      { id: 't3', name: 'Table Mountain & Culture', duration: '2 days', price_per_person: 200, highlights: ['Table Mountain Hike', 'Bo-Kaap', 'Robben Island', 'Township Tour'] }
+    ]
+  },
+  {
+    id: 'kyoto',
+    name: 'Kyoto', country: 'Japan',
+    tagline: 'Ancient capital of Japan — where geisha traditions and Zen temples define elegance.',
+    image: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?w=800&q=80',
+    from_price: 185,
+    hotels: [
+      { id: 'h1', name: 'Aman Kyoto', stars: 5, price_per_night: 780, amenities: ['Forest Setting', 'Onsen', 'Private Garden', 'Ryokan Rooms'] },
+      { id: 'h2', name: 'Hyatt Regency Kyoto', stars: 4, price_per_night: 310, amenities: ['Garden Views', 'Spa', 'Japanese Restaurant', 'Outdoor Bath'] },
+      { id: 'h3', name: 'Gion Hatanaka Ryokan', stars: 4, price_per_night: 390, amenities: ['Traditional Ryokan', 'Kaiseki Cuisine', 'Tea Ceremony', 'Kimono Rental'] }
+    ],
+    tours: [
+      { id: 't1', name: 'Temple & Shrine Walk', duration: '2 days', price_per_person: 170, highlights: ['Fushimi Inari', 'Kinkaku-ji', 'Gion District', 'Arashiyama'] },
+      { id: 't2', name: 'Geisha & Traditions', duration: '1 day', price_per_person: 220, highlights: ['Geisha Experience', 'Ikebana Class', 'Tea Ceremony', 'Kimono Dressing'] },
+      { id: 't3', name: 'Nara & Countryside', duration: '2 days', price_per_person: 195, highlights: ['Giant Buddha', 'Friendly Deer', 'Sake Brewery', 'Bamboo Forest'] }
+    ]
+  }
+];
+
+// ===== STATE =====
+const state = {
+  currentStep: 1,
+  selectedDest: null,
+  selectedHotel: null,
+  selectedMeal: null,
+  selectedTour: null,
+  checkin: '',
+  checkout: '',
+  guests: 1,
+  guestName: '',
+  booking: null
+};
+
+// ===== NAVIGATION =====
+function navigate(page) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById('page-' + (page === 'newyork' ? 'booking' : page)).classList.add('active');
+
+  // Nav highlights
+  document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+  const navEl = document.getElementById('nav-' + page);
+  if (navEl) navEl.classList.add('active');
+
+  // Show footer except on booking/confirmation
+  const footer = document.getElementById('site-footer');
+  footer.style.display = (page === 'booking' || page === 'confirmation') ? 'none' : 'block';
+
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function showPage(pageId) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.getElementById(pageId).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+// ===== RENDER DESTINATION CARDS =====
+function renderDestCard(dest, container) {
+  const card = document.createElement('div');
+  card.className = 'dest-card';
+  card.setAttribute('data-dest', dest.id);
+  card.onclick = () => openBooking(dest.id);
+  card.innerHTML = `
+    <div class="dest-card-img">
+      <img src="${dest.image}" alt="${dest.name}" loading="lazy" />
+      <span class="dest-card-badge">${dest.country}</span>
+    </div>
+    <div class="dest-card-body">
+      <p class="dest-card-country">${dest.country}</p>
+      <h3 class="dest-card-name">${dest.name}</h3>
+      <p class="dest-card-tag">${dest.tagline}</p>
+      <div class="dest-card-footer">
+        <div class="dest-card-price">From <strong>$${dest.from_price}</strong><span style="font-size:12px;color:var(--muted)">/night</span></div>
+        <button class="btn btn-primary btn-sm" onclick="event.stopPropagation();openBooking('${dest.id}')">Book Now</button>
+      </div>
+    </div>
+  `;
+  container.appendChild(card);
+}
+
+function renderAllCards() {
+  const featured = document.getElementById('featured-grid');
+  const allGrid = document.getElementById('all-dest-grid');
+  DESTINATIONS.forEach((d, i) => {
+    if (i < 6) renderDestCard(d, featured);
+    renderDestCard(d, allGrid);
+  });
+}
+
+// ===== OPEN BOOKING =====
+function openBooking(destId) {
+  const dest = DESTINATIONS.find(d => d.id === destId);
+  if (!dest) return;
+  state.selectedDest = dest;
+  state.selectedHotel = null;
+  state.selectedMeal = null;
+  state.selectedTour = null;
+  state.currentStep = 1;
+
+  // Set titles
+  document.getElementById('booking-dest-title').textContent = 'Journey to ' + dest.name;
+  document.getElementById('booking-dest-tagline').textContent = dest.tagline;
+  document.getElementById('sidebar-img').src = dest.image;
+  document.getElementById('sidebar-img').alt = dest.name;
+  document.getElementById('sidebar-dest-name').textContent = dest.name;
+
+  // Reset form fields
+  document.getElementById('checkin').value = '';
+  document.getElementById('checkout').value = '';
+  document.getElementById('guests').value = 1;
+  document.getElementById('guest-name').value = '';
+
+  // Clear errors
+  clearAllErrors();
+
+  // Render options
+  renderHotelOptions(dest);
+  renderMealOptions();
+  renderTourOptions(dest);
+
+  // Reset steps
+  switchStep(1);
+  updateSummary();
+
+  showPage('page-booking');
+  document.getElementById('nav-booking').style.display = 'inline';
+}
+
+// ===== RENDER OPTIONS =====
+function renderHotelOptions(dest) {
+  const container = document.getElementById('hotel-options');
+  container.innerHTML = '';
+  dest.hotels.forEach(h => {
+    const stars = Array(h.stars).fill('<span class="star">&#9733;</span>').join('');
+    const div = document.createElement('div');
+    div.className = 'radio-option';
+    div.setAttribute('data-id', h.id);
+    div.onclick = () => selectHotel(h.id);
+    div.innerHTML = `
+      <div class="radio-inner">
+        <div class="radio-custom"></div>
+        <div class="radio-info">
+          <h4>${h.name}</h4>
+          <div class="radio-stars">${stars}</div>
+          <p>${h.amenities.join(' &bull; ')}</p>
+        </div>
+      </div>
+      <div class="radio-price">
+        <span class="amount">$${h.price_per_night}</span>
+        <span class="unit">/night</span>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function renderMealOptions() {
+  const container = document.getElementById('meal-options');
+  container.innerHTML = '';
+  MEAL_PLANS.forEach(m => {
+    const div = document.createElement('div');
+    div.className = 'radio-option';
+    div.setAttribute('data-id', m.id);
+    div.onclick = () => selectMeal(m.id);
+    div.innerHTML = `
+      <div class="radio-inner">
+        <div class="radio-custom"></div>
+        <div class="radio-info">
+          <h4>${m.name}</h4>
+          <p>${m.desc}</p>
+        </div>
+      </div>
+      <div class="radio-price">
+        <span class="amount">$${m.price_per_day}</span>
+        <span class="unit">/day/person</span>
+      </div>
+    `;
+    container.appendChild(div);
+  });
+}
+
+function renderTourOptions(dest) {
+  const container = document.getElementById('tour-options');
+  container.innerHTML = '';
+  dest.tours.forEach(t => {
+    const div = document.createElement('div');
+    div.className = 'radio-option tour-option';
+    div.setAttribute('data-id', t.id);
+    div.onclick = () => selectTour(t.id);
+    div.innerHTML = `
+      <div class="tour-top">
+        <div class="radio-inner">
+          <div class="radio-custom"></div>
+          <div class="radio-info">
+            <h4>${t.name} <span class="tour-badge">${t.duration}</span></h4>
+          </div>
+        </div>
+        <div class="radio-price">
+          <span class="amount">$${t.price_per_person}</span>
+          <span class="unit">/person</span>
+        </div>
+      </div>
+      <p class="tour-highlights" style="padding-left:36px">${t.highlights.join(' &bull; ')}</p>
+    `;
+    container.appendChild(div);
+  });
+}
+
+// ===== SELECTION HANDLERS =====
+function selectHotel(id) {
+  state.selectedHotel = state.selectedDest.hotels.find(h => h.id === id);
+  document.querySelectorAll('#hotel-options .radio-option').forEach(el => {
+    el.classList.toggle('selected', el.getAttribute('data-id') === id);
+  });
+  clearError('err-hotel');
+  updateSummary();
+}
+
+function selectMeal(id) {
+  state.selectedMeal = MEAL_PLANS.find(m => m.id === id);
+  document.querySelectorAll('#meal-options .radio-option').forEach(el => {
+    el.classList.toggle('selected', el.getAttribute('data-id') === id);
+  });
+  clearError('err-meal');
+  updateSummary();
+}
+
+function selectTour(id) {
+  state.selectedTour = state.selectedDest.tours.find(t => t.id === id);
+  document.querySelectorAll('#tour-options .radio-option').forEach(el => {
+    el.classList.toggle('selected', el.getAttribute('data-id') === id);
+  });
+  clearError('err-tour');
+  updateSummary();
+}
+
+// ===== STEP NAVIGATION =====
+function switchStep(n) {
+  state.currentStep = n;
+  document.querySelectorAll('.step-panel').forEach((p, i) => {
+    p.classList.toggle('active', i + 1 === n);
+  });
+  document.querySelectorAll('.step-btn').forEach((b, i) => {
+    b.classList.remove('active', 'done');
+    if (i + 1 === n) b.classList.add('active');
+    else if (i + 1 < n) b.classList.add('done');
+  });
+  hideAllBanners();
+}
+
+function goStep2() {
+  const valid = validateStep1();
+  if (!valid) {
+    document.getElementById('err-banner-1').classList.add('show');
+    return;
+  }
+  document.getElementById('err-banner-1').classList.remove('show');
+  switchStep(2);
+}
+
+function goStep3() {
+  const valid = validateStep2();
+  if (!valid) {
+    document.getElementById('err-banner-2').classList.add('show');
+    return;
+  }
+  document.getElementById('err-banner-2').classList.remove('show');
+  switchStep(3);
+}
+
+// ===== VALIDATION =====
+function validateStep1() {
+  let ok = true;
+
+  const checkin = document.getElementById('checkin').value;
+  const checkout = document.getElementById('checkout').value;
+  const guests = parseInt(document.getElementById('guests').value);
+
+  if (!checkin) { showError('err-checkin', 'Check-in date is required'); showFieldError('checkin'); ok = false; } else clearError('err-checkin');
+  if (!checkout) { showError('err-checkout', 'Check-out date is required'); showFieldError('checkout'); ok = false; } else clearError('err-checkout');
+
+  if (checkin && checkout && new Date(checkout) <= new Date(checkin)) {
+    showError('err-checkout', 'Check-out must be after check-in'); showFieldError('checkout'); ok = false;
+  }
+
+  if (!guests || guests < 1) { showError('err-guests', 'At least 1 guest required'); showFieldError('guests'); ok = false; } else clearError('err-guests');
+  if (!state.selectedHotel) { showError('err-hotel', 'Please select a hotel'); ok = false; } else clearError('err-hotel');
+
+  state.checkin = checkin;
+  state.checkout = checkout;
+  state.guests = guests;
+
+  return ok;
+}
+
+function validateStep2() {
+  if (!state.selectedMeal) { showError('err-meal', 'Please select a dining plan'); return false; }
+  clearError('err-meal');
+  return true;
+}
+
+function validateStep3() {
+  let ok = true;
+  const name = document.getElementById('guest-name').value.trim();
+  if (!state.selectedTour) { showError('err-tour', 'Please select a tour package'); ok = false; } else clearError('err-tour');
+  if (!name) { showError('err-name', 'Guest name is required'); showFieldError('guest-name'); ok = false; } else clearError('err-name');
+  state.guestName = name;
+  return ok;
+}
+
+function showError(id, msg) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = msg;
+}
+function clearError(id) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = '';
+}
+function showFieldError(id) {
+  const el = document.getElementById(id);
+  if (el) el.classList.add('error');
+  el.addEventListener('input', function() { this.classList.remove('error'); }, { once: true });
+}
+function clearAllErrors() {
+  ['err-checkin','err-checkout','err-guests','err-hotel','err-meal','err-tour','err-name'].forEach(clearError);
+  ['checkin','checkout','guests','guest-name'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('error');
+  });
+  hideAllBanners();
+}
+function hideAllBanners() {
+  ['err-banner-1','err-banner-2','err-banner-3'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('show');
+  });
+}
+
+// ===== SUMMARY UPDATE =====
+function calculateTotal() {
+  const checkin = document.getElementById('checkin').value;
+  const checkout = document.getElementById('checkout').value;
+  const guests = parseInt(document.getElementById('guests').value) || 1;
+
+  let days = 0;
+  if (checkin && checkout) {
+    const d = Math.ceil((new Date(checkout) - new Date(checkin)) / 86400000);
+    days = d > 0 ? d : 0;
+  }
+
+  const hotelTotal = state.selectedHotel ? state.selectedHotel.price_per_night * days : 0;
+  const mealTotal = state.selectedMeal ? state.selectedMeal.price_per_day * days * guests : 0;
+  const tourTotal = state.selectedTour ? state.selectedTour.price_per_person * guests : 0;
+
+  return { total: hotelTotal + mealTotal + tourTotal, days, guests, hotelTotal, mealTotal, tourTotal };
+}
+
+function updateSummary() {
+  const { total, days, guests, hotelTotal, mealTotal, tourTotal } = calculateTotal();
+  const checkin = document.getElementById('checkin').value;
+  const checkout = document.getElementById('checkout').value;
+
+  let rows = '';
+
+  rows += `<div class="summary-row"><span class="summary-row-key">Guests</span><span class="summary-row-val">${document.getElementById('guests').value || 1}</span></div>`;
+
+  if (days > 0) rows += `<div class="summary-row"><span class="summary-row-key">Duration</span><span class="summary-row-val">${days} Nights</span></div>`;
+
+  if (checkin && checkout) {
+    rows += `<div class="summary-row"><span class="summary-row-key">Dates</span><span class="summary-row-val">${formatDate(checkin)} &rarr; ${formatDate(checkout)}</span></div>`;
+  }
+
+  if (state.selectedHotel) {
+    rows += `<div class="summary-row"><span class="summary-row-key">Hotel</span><span class="summary-row-val">${state.selectedHotel.name}<br><span style="font-size:12px;font-weight:400;color:var(--muted)">$${hotelTotal} total</span></span></div>`;
+  }
+
+  if (state.selectedMeal) {
+    rows += `<div class="summary-row"><span class="summary-row-key">Dining</span><span class="summary-row-val">${state.selectedMeal.name}<br><span style="font-size:12px;font-weight:400;color:var(--muted)">$${mealTotal} total</span></span></div>`;
+  }
+
+  if (state.selectedTour) {
+    rows += `<div class="summary-row"><span class="summary-row-key">Tour</span><span class="summary-row-val">${state.selectedTour.name}<br><span style="font-size:12px;font-weight:400;color:var(--muted)">$${tourTotal} total</span></span></div>`;
+  }
+
+  document.getElementById('summary-rows').innerHTML = rows;
+  document.getElementById('summary-total').textContent = '$' + total;
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr + 'T00:00:00');
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+}
+
+// ===== CONFIRM BOOKING =====
+function confirmBooking() {
+  // Re-read current values
+  state.checkin = document.getElementById('checkin').value;
+  state.checkout = document.getElementById('checkout').value;
+  state.guests = parseInt(document.getElementById('guests').value) || 1;
+  state.guestName = document.getElementById('guest-name').value.trim();
+
+  // Validate all steps
+  const v1 = validateStep1();
+  if (!v1) { switchStep(1); document.getElementById('err-banner-1').classList.add('show'); return; }
+
+  const v2 = validateStep2();
+  if (!v2) { switchStep(2); document.getElementById('err-banner-2').classList.add('show'); return; }
+
+  const v3 = validateStep3();
+  if (!v3) { document.getElementById('err-banner-3').classList.add('show'); return; }
+
+  const ref = 'WLX-' + Math.random().toString(36).substring(2, 6).toUpperCase();
+  const { total, days } = calculateTotal();
+
+  state.booking = {
+    ref,
+    dest: state.selectedDest,
+    hotel: state.selectedHotel,
+    meal: state.selectedMeal,
+    tour: state.selectedTour,
+    checkin: state.checkin,
+    checkout: state.checkout,
+    guests: state.guests,
+    guestName: state.guestName,
+    total,
+    days
+  };
+
+  populateConfirmation(state.booking);
+  showPage('page-confirmation');
+  document.getElementById('site-footer').style.display = 'none';
+  showToast('Booking confirmed! Your reference is ' + ref, 'success');
+}
+
+// ===== POPULATE CONFIRMATION =====
+function populateConfirmation(b) {
+  document.getElementById('conf-ref').textContent = b.ref;
+  document.getElementById('conf-name').textContent = b.guestName;
+  document.getElementById('conf-dest').textContent = b.dest.name + ', ' + b.dest.country;
+  document.getElementById('conf-checkin').textContent = formatDate(b.checkin);
+  document.getElementById('conf-checkout').textContent = formatDate(b.checkout);
+  document.getElementById('conf-guests').textContent = b.guests + (b.guests === 1 ? ' Guest' : ' Guests');
+  document.getElementById('conf-hotel').textContent = b.hotel.name + ' (' + b.hotel.stars + ' Stars)';
+  document.getElementById('conf-meal').textContent = b.meal.name;
+  document.getElementById('conf-tour').textContent = b.tour.name + ' — ' + b.tour.duration;
+  document.getElementById('conf-duration').textContent = b.days + ' Night' + (b.days !== 1 ? 's' : '');
+  document.getElementById('conf-total').textContent = '$' + b.total;
+}
+
+// ===== PDF GENERATION =====
+function downloadPDF() {
+  const b = state.booking;
+  if (!b) { showToast('No booking found. Please complete a booking first.', 'error'); return; }
+
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+  const W = 210, pageH = 297;
+  let y = 0;
+
+  // Header background
+  doc.setFillColor(29, 111, 164);
+  doc.rect(0, 0, W, 52, 'F');
+
+  // Logo / Title
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(28);
+  doc.setFont('helvetica', 'bold');
+  doc.text('WanderLux Travels', 20, 22);
+
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(180, 220, 255);
+  doc.text('Official Travel Ticket & Booking Confirmation', 20, 32);
+
+  // Reference badge
+  doc.setFillColor(245, 158, 11);
+  doc.roundedRect(20, 38, 80, 10, 3, 3, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Booking Ref: ' + b.ref, 60, 45, { align: 'center' });
+
+  // Date generated
+  doc.setFontSize(9);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(200, 235, 255);
+  doc.text('Generated: ' + new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }), W - 20, 45, { align: 'right' });
+
+  y = 64;
+
+  // Destination banner
+  doc.setFillColor(245, 248, 250);
+  doc.rect(0, y - 4, W, 20, 'F');
+  doc.setTextColor(26, 31, 46);
+  doc.setFontSize(18);
+  doc.setFont('helvetica', 'bold');
+  doc.text(b.dest.name + ', ' + b.dest.country, 20, y + 9);
+  y += 24;
+
+  // Section function
+  function section(title, rows) {
+    // Section title bar
+    doc.setFillColor(29, 111, 164);
+    doc.rect(20, y, W - 40, 8, 'F');
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(9);
+    doc.setFont('helvetica', 'bold');
+    doc.text(title.toUpperCase(), 24, y + 5.5);
+    y += 12;
+
+    rows.forEach(([key, val], i) => {
+      if (i % 2 === 0) {
+        doc.setFillColor(248, 250, 252);
+        doc.rect(20, y - 1, W - 40, 9, 'F');
+      }
+      doc.setTextColor(107, 114, 128);
+      doc.setFontSize(9);
+      doc.setFont('helvetica', 'normal');
+      doc.text(key, 24, y + 5);
+      doc.setTextColor(26, 31, 46);
+      doc.setFont('helvetica', 'bold');
+      doc.text(String(val), W - 24, y + 5, { align: 'right' });
+      y += 10;
+    });
+    y += 8;
+  }
+
+  section('Traveler Information', [
+    ['Full Name', b.guestName],
+    ['Number of Guests', b.guests + (b.guests === 1 ? ' Guest' : ' Guests')],
+    ['Check-in Date', formatDate(b.checkin)],
+    ['Check-out Date', formatDate(b.checkout)],
+    ['Duration', b.days + ' Night' + (b.days !== 1 ? 's' : '')]
+  ]);
+
+  section('Accommodation', [
+    ['Hotel', b.hotel.name],
+    ['Star Rating', Array(b.hotel.stars).fill('★').join('') + ' (' + b.hotel.stars + ' Stars)'],
+    ['Amenities', b.hotel.amenities.slice(0, 3).join(', ')],
+    ['Rate', '$' + b.hotel.price_per_night + ' per night']
+  ]);
+
+  section('Dining', [
+    ['Meal Plan', b.meal.name],
+    ['Rate', '$' + b.meal.price_per_day + ' per person per day']
+  ]);
+
+  section('Tour Experience', [
+    ['Package Name', b.tour.name],
+    ['Duration', b.tour.duration],
+    ['Highlights', b.tour.highlights.slice(0, 3).join(' | ')],
+    ['Rate', '$' + b.tour.price_per_person + ' per person']
+  ]);
+
+  // Total box
+  doc.setFillColor(245, 158, 11);
+  doc.roundedRect(20, y, W - 40, 20, 4, 4, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(11);
+  doc.setFont('helvetica', 'bold');
+  doc.text('Total Amount', 28, y + 13);
+  doc.setFontSize(18);
+  doc.text('$' + b.total, W - 24, y + 13, { align: 'right' });
+  y += 30;
+
+  // Note
+  doc.setFontSize(8.5);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(107, 114, 128);
+  doc.text('This ticket is valid for the dates listed above. Please carry a copy during travel.', 20, y);
+  doc.text('All prices are in USD and include applicable taxes and fees.', 20, y + 6);
+  y += 18;
+
+  // Footer
+  doc.setFillColor(26, 31, 46);
+  doc.rect(0, pageH - 24, W, 24, 'F');
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(12);
+  doc.setFont('helvetica', 'bolditalic');
+  doc.text('Have a wonderful journey!', W / 2, pageH - 12, { align: 'center' });
+  doc.setFontSize(8);
+  doc.setFont('helvetica', 'normal');
+  doc.setTextColor(160, 180, 200);
+  doc.text('WanderLux Travels | www.wanderlux.travel | support@wanderlux.travel', W / 2, pageH - 6, { align: 'center' });
+
+  doc.save('WanderLux-Ticket-' + b.ref + '.pdf');
+  showToast('Ticket PDF downloaded successfully!', 'success');
+}
+
+// ===== HERO SEARCH =====
+function handleHeroSearch() {
+  const destInput = document.getElementById('hero-dest-input').value.trim().toLowerCase();
+  if (destInput) {
+    const match = DESTINATIONS.find(d => d.name.toLowerCase().includes(destInput) || d.country.toLowerCase().includes(destInput));
+    if (match) { openBooking(match.id); return; }
+  }
+  navigate('destinations');
+}
+
+// ===== TOAST =====
+function showToast(msg, type = 'info') {
+  const wrap = document.getElementById('toast-wrap');
+  const t = document.createElement('div');
+  t.className = 'toast ' + type;
+  const icons = {
+    success: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#16a34a" stroke-width="2.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+    error: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>',
+    info: '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1d6fa4" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>'
+  };
+  t.innerHTML = (icons[type] || '') + '<span>' + msg + '</span>';
+  wrap.appendChild(t);
+  setTimeout(() => { t.style.opacity = '0'; t.style.transform = 'translateX(100%)'; t.style.transition = '0.3s'; setTimeout(() => t.remove(), 400); }, 4000);
+}
+
+// ===== INIT =====
+document.addEventListener('DOMContentLoaded', function() {
+  renderAllCards();
+
+  // Set min date for date inputs
+  const today = new Date().toISOString().split('T')[0];
+  document.getElementById('checkin').min = today;
+  document.getElementById('checkout').min = today;
+
+  // Update checkout min when checkin changes
+  document.getElementById('checkin').addEventListener('change', function() {
+    document.getElementById('checkout').min = this.value;
+  });
+});
+</script>
+</body>
+</html>

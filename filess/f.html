@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F</title>
+    <!-- Tailwind CSS for rapid styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- jsPDF Library for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+</head>
+
+<body class="bg-gray-50 text-gray-800 font-sans">
+
+    <!-- Header -->
+    <header class="bg-blue-600 text-white p-6 shadow-md">
+        <div class="max-w-4xl mx-auto flex justify-between items-center">
+            <h1 class="text-3xl font-bold">✈️ Wanderlust Travels</h1>
+            <p class="text-sm">Your Journey Begins Here</p>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto mt-10 p-6 bg-white rounded-lg shadow-lg mb-10">
+        <h2 class="text-2xl font-semibold mb-6 border-b pb-2">Plan Your Trip</h2>
+
+        <form id="bookingForm" class="space-y-6">
+
+            <!-- Passenger Details -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Full Name</label>
+                    <input type="text" id="name" required
+                        class="mt-1 w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="John Doe">
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Email Address</label>
+                    <input type="email" id="email" required
+                        class="mt-1 w-full p-2 border border-gray-300 rounded-md focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="john@example.com">
+                </div>
+            </div>
+
+            <!-- Destination & Dates -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Destination</label>
+                    <select id="destination" required class="mt-1 w-full p-2 border border-gray-300 rounded-md">
+                        <option value="">Select a location...</option>
+                        <option value="Bali, Indonesia">Bali, Indonesia</option>
+                        <option value="Swiss Alps, Switzerland">Swiss Alps, Switzerland</option>
+                        <option value="Kyoto, Japan">Kyoto, Japan</option>
+                        <option value="New York City, USA">New York City, USA</option>
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Travel Date</label>
+                    <input type="date" id="date" required class="mt-1 w-full p-2 border border-gray-300 rounded-md">
+                </div>
+            </div>
+
+            <!-- Packages -->
+            <div class="space-y-4">
+                <h3 class="text-lg font-medium text-gray-900">Customize Your Package</h3>
+
+                <div class="flex items-center">
+                    <input type="checkbox" id="hotel" value="Premium Hotel Stay"
+                        class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                    <label for="hotel" class="ml-2 block text-sm text-gray-700">Include Premium Hotel
+                        Accommodation</label>
+                </div>
+
+                <div class="flex items-center">
+                    <input type="checkbox" id="food" value="All-Inclusive Dining"
+                        class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                    <label for="food" class="ml-2 block text-sm text-gray-700">Include All-Inclusive Food &
+                        Beverages</label>
+                </div>
+
+                <div class="flex items-center">
+                    <input type="checkbox" id="tour" value="Guided City Tour"
+                        class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+                    <label for="tour" class="ml-2 block text-sm text-gray-700">Include Local Guided Tour</label>
+                </div>
+            </div>
+
+            <!-- Submit Button -->
+            <button type="submit"
+                class="w-full bg-blue-600 text-white font-bold py-3 px-4 rounded-md hover:bg-blue-700 transition duration-300">
+                Confirm Booking & Generate Ticket
+            </button>
+        </form>
+
+        <!-- Success Message -->
+        <div id="successMessage" class="hidden mt-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded-md">
+            <strong>Booking Successful!</strong> Your PDF ticket has been generated and downloaded.
+        </div>
+    </main>
+
+    <script>
+        document.getElementById('bookingForm').addEventListener('submit', function (e) {
+            e.preventDefault(); // Prevent page reload
+
+            // Gather form data
+            const name = document.getElementById('name').value;
+            const email = document.getElementById('email').value;
+            const destination = document.getElementById('destination').value;
+            const date = document.getElementById('date').value;
+
+            // Gather checkboxes
+            const packages = [];
+            if (document.getElementById('hotel').checked) packages.push(document.getElementById('hotel').value);
+            if (document.getElementById('food').checked) packages.push(document.getElementById('food').value);
+            if (document.getElementById('tour').checked) packages.push(document.getElementById('tour').value);
+
+            // Generate PDF
+            generatePDF(name, email, destination, date, packages);
+
+            // Show success message
+            document.getElementById('successMessage').classList.remove('hidden');
+            this.reset(); // Clear the form
+        });
+
+        function generatePDF(name, email, destination, date, packages) {
+            // Initialize jsPDF
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            // Set up document styles and content
+            doc.setFontSize(22);
+            doc.setTextColor(37, 99, 235); // Blue color
+            doc.text("WANDERLUST TRAVELS", 105, 20, null, null, "center");
+
+            doc.setFontSize(16);
+            doc.setTextColor(0, 0, 0);
+            doc.text("Official Booking Ticket", 105, 30, null, null, "center");
+
+            doc.setLineWidth(0.5);
+            doc.line(20, 35, 190, 35); // Draw a line
+
+            // Passenger Info
+            doc.setFontSize(12);
+            doc.setFont("helvetica", "bold");
+            doc.text("Passenger Details:", 20, 50);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Name: ${name}`, 20, 60);
+            doc.text(`Email: ${email}`, 20, 70);
+
+            // Itinerary Info
+            doc.setFont("helvetica", "bold");
+            doc.text("Itinerary Details:", 20, 90);
+            doc.setFont("helvetica", "normal");
+            doc.text(`Destination: ${destination}`, 20, 100);
+            doc.text(`Date of Travel: ${date}`, 20, 110);
+
+            // Package Inclusions
+            doc.setFont("helvetica", "bold");
+            doc.text("Package Inclusions:", 20, 130);
+            doc.setFont("helvetica", "normal");
+
+            if (packages.length > 0) {
+                let yOffset = 140;
+                packages.forEach(pkg => {
+                    doc.text(`- ${pkg}`, 25, yOffset);
+                    yOffset += 10;
+                });
+            } else {
+                doc.text("Flight/Transport Only (No add-ons selected)", 25, 140);
+            }
+
+            // Footer
+            doc.setLineWidth(0.5);
+            doc.line(20, 260, 190, 260);
+            doc.setFontSize(10);
+            doc.setTextColor(100, 100, 100);
+            doc.text("Thank you for choosing Wanderlust Travels. Have a safe journey!", 105, 270, null, null, "center");
+
+            // Generate booking ID
+            const bookingId = Math.floor(Math.random() * 90000) + 10000;
+            doc.text(`Booking Ref: WL-${bookingId}`, 105, 280, null, null, "center");
+
+            // Trigger download
+            doc.save(`${name.replace(/\s+/g, '_')}_Ticket.pdf`);
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+    <title>d</title>
+    <!-- Tailwind CSS + Font Awesome + Google Fonts -->
+    <script src="https://cdn.tailwindcss.com">
+    </script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet" />
+    <!-- jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js">
+    </script>
+    <!-- html2canvas for crisp PDF rendering -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js">
+    </script>
+    <style>
+        * {
+            font-family: 'Inter', sans-serif;
+        }
+        body {
+            background: linear-gradient(135deg, #e0eafc 0%, #cfdef3 100%);
+            min-height: 100vh;
+        }
+        .card-shadow {
+            box-shadow: 0 20px 35px -12px rgba(0, 0, 0, 0.15);
+            transition: all 0.2s;
+        }
+        input:focus,
+        select:focus,
+        textarea:focus {
+            outline: none;
+            ring: 2px solid #f97316;
+            border-color: #f97316;
+        }
+        .transition-smooth {
+            transition: all 0.2s ease;
+        }
+        .toast-success {
+            animation: fadeInUp 0.3s ease forwards;
+        }
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* --- PDF Ticket hidden container styles --- */
+        #ticketContainer {
+            position: fixed;
+            left: -9999px;
+            top: 0;
+            width: 800px;
+            background: #ffffff;
+            font-family: 'Inter', sans-serif;
+            padding: 0;
+            margin: 0;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+            border-radius: 0;
+            overflow: hidden;
+            z-index: 9999;
+        }
+        #ticketContainer * {
+            box-sizing: border-box;
+        }
+        .ticket-header {
+            background: linear-gradient(135deg, #ea580c, #f97316);
+            padding: 18px 40px 14px 40px;
+            color: #fff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .ticket-header h1 {
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            margin: 0;
+        }
+        .ticket-header .badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 6px 18px;
+            border-radius: 40px;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+        .ticket-body {
+            padding: 30px 40px 20px 40px;
+        }
+        .ticket-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0 0 4px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .ticket-title i {
+            color: #f97316;
+        }
+        .ticket-sub {
+            color: #64748b;
+            font-size: 14px;
+            font-weight: 400;
+            margin-bottom: 18px;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 14px;
+        }
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px 30px;
+            background: #f8fafc;
+            padding: 16px 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            border: 1px solid #e2e8f0;
+        }
+        .info-grid .label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .info-grid .value {
+            font-size: 15px;
+            font-weight: 600;
+            color: #0f172a;
+        }
+        .info-grid .value-sm {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        .trip-summary {
+            background: #fff7ed;
+            border-radius: 12px;
+            padding: 16px 20px;
+            margin-bottom: 18px;
+            border-left: 5px solid #f97316;
+        }
+        .trip-summary .row {
+            display: flex;
+            justify-content: space-between;
+            padding: 5px 0;
+            font-size: 15px;
+            border-bottom: 1px dashed #fed7aa;
+        }
+        .trip-summary .row:last-child {
+            border-bottom: none;
+        }
+        .trip-summary .row .lbl {
+            color: #64748b;
+            font-weight: 500;
+        }
+        .trip-summary .row .val {
+            font-weight: 600;
+            color: #0f172a;
+        }
+        .trip-summary .row .val.total {
+            color: #ea580c;
+            font-size: 18px;
+            font-weight: 800;
+        }
+        .breakdown {
+            background: #f1f5f9;
+            border-radius: 10px;
+            padding: 14px 20px;
+            margin-bottom: 16px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 6px 20px;
+        }
+        .breakdown .item {
+            font-size: 14px;
+            color: #334155;
+        }
+        .breakdown .item b {
+            color: #0f172a;
+        }
+        .breakdown .item .price {
+            font-weight: 600;
+            color: #0f172a;
+        }
+        .ticket-footer {
+            background: #f1f5f9;
+            padding: 12px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 13px;
+            color: #475569;
+            border-top: 1px solid #e2e8f0;
+        }
+        .ticket-footer .contact {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+        }
+        .ticket-footer .contact i {
+            color: #f97316;
+            width: 18px;
+        }
+        .ticket-footer .thanks {
+            font-weight: 600;
+            color: #0f172a;
+        }
+        .watermark {
+            position: absolute;
+            right: 30px;
+            bottom: 50px;
+            font-size: 80px;
+            font-weight: 800;
+            color: rgba(249, 115, 22, 0.06);
+            transform: rotate(-12deg);
+            pointer-events: none;
+            letter-spacing: 6px;
+        }
+        .ticket-id-big {
+            font-size: 13px;
+            font-weight: 700;
+            color: #f97316;
+            background: #fff7ed;
+            padding: 2px 14px;
+            border-radius: 20px;
+            display: inline-block;
+            border: 1px solid #fed7aa;
+        }
+        /* ensure crispness */
+        #ticketContainer .crisp {
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* Responsive PDF hidden container tweaks */
+        @media print {
+            #ticketContainer {
+                position: static !important;
+                left: auto !important;
+                top: auto !important;
+                width: 100% !important;
+                box-shadow: none !important;
+                border-radius: 0 !important;
+            }
+        }
+    </style>
+</head>
+
+<body class="p-4 md:p-6">
+
+    <div class="max-w-7xl mx-auto">
+        <!-- Header Brand -->
+        <div class="text-center mb-8">
+            <div class="inline-flex items-center gap-3 bg-white/60 backdrop-blur-sm rounded-full px-5 py-2 shadow-sm">
+                <i class="fas fa-globe-asia text-orange-600 text-2xl"></i>
+                <h1 class="text-3xl md:text-4xl font-extrabold bg-gradient-to-r from-orange-700 to-amber-700 bg-clip-text text-transparent">
+                    WanderWise Escapes
+                </h1>
+            </div>
+            <p class="text-gray-700 mt-2 font-medium">Craft your perfect journey — hotel, meals & experiences</p>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Booking Form Panel -->
+            <div class="lg:col-span-2">
+                <div class="bg-white/90 backdrop-blur-sm rounded-2xl card-shadow p-5 md:p-7 border border-white/40">
+                    <div class="flex items-center gap-2 border-b border-gray-200 pb-3 mb-5">
+                        <i class="fas fa-calendar-alt text-orange-500 text-xl"></i>
+                        <h2 class="text-2xl font-bold text-gray-800">Plan Your Trip</h2>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-1"><i class="fas fa-map-marker-alt text-orange-500 mr-1"></i> Destination *</label>
+                            <select id="locationSelect" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 bg-gray-50 focus:bg-white transition">
+                                <option value="Goa">🏖️ Goa — Beaches & Nightlife</option>
+                                <option value="Manali">🏔️ Manali — Mountains & Adventure</option>
+                                <option value="Jaipur">🏰 Jaipur — Royal Heritage</option>
+                                <option value="Kerala">🌿 Kerala — Backwaters & Serenity</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-1"><i class="fas fa-hotel mr-1 text-orange-500"></i> Hotel / Resort *</label>
+                            <select id="hotelSelect" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 bg-gray-50"></select>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-1"><i class="fas fa-utensils mr-1 text-orange-500"></i> Food Plan *</label>
+                            <select id="foodSelect" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 bg-gray-50"></select>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-1"><i class="fas fa-hiking mr-1 text-orange-500"></i> Tour Package *</label>
+                            <select id="tourSelect" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 bg-gray-50"></select>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-1"><i class="fas fa-users mr-1 text-orange-500"></i> Travelers</label>
+                            <input type="number" id="travelers" min="1" max="20" value="2" class="w-full border border-gray-300 rounded-xl px-4 py-2.5" />
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-1"><i class="fas fa-clock mr-1 text-orange-500"></i> Duration (Days)</label>
+                            <input type="number" id="daysCount" min="1" max="14" value="3" class="w-full border border-gray-300 rounded-xl px-4 py-2.5" />
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-1"><i class="fas fa-calendar-week mr-1 text-orange-500"></i> Start Date *</label>
+                            <input type="date" id="travelDate" class="w-full border border-gray-300 rounded-xl px-4 py-2.5 bg-gray-50" />
+                        </div>
+                    </div>
+
+                    <!-- Customer Details -->
+                    <div class="mt-7 pt-2 border-t border-gray-200">
+                        <h3 class="font-bold text-gray-800 text-lg mb-3 flex items-center gap-2"><i class="fas fa-user-check text-orange-500"></i> Traveler Details</h3>
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <input type="text" id="fullName" placeholder="Full Name *" class="border border-gray-300 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-orange-300" />
+                            <input type="email" id="email" placeholder="Email Address *" class="border border-gray-300 rounded-xl px-4 py-2.5" />
+                            <input type="tel" id="phone" placeholder="Phone Number *" class="border border-gray-300 rounded-xl px-4 py-2.5" />
+                        </div>
+                    </div>
+
+                    <!-- PRICE SUMMARY -->
+                    <div class="mt-6 bg-gradient-to-r from-amber-50 to-orange-50 rounded-xl p-4 border border-amber-200">
+                        <div class="flex justify-between items-center flex-wrap gap-2">
+                            <span class="font-bold text-gray-700"><i class="fas fa-receipt"></i> Total Estimate :</span>
+                            <span id="totalPriceDisplay" class="text-2xl font-extrabold text-orange-700">₹ 0</span>
+                        </div>
+                        <div class="text-xs text-gray-500 mt-1 flex flex-wrap gap-x-4 gap-y-1" id="priceBreakdown"></div>
+                    </div>
+
+                    <button id="bookNowBtn" class="mt-6 w-full bg-orange-600 hover:bg-orange-700 text-white font-bold py-3 rounded-xl shadow-md transition-all flex items-center justify-center gap-2 text-lg">
+                        <i class="fas fa-ticket-alt"></i> Confirm Booking & Generate PDF Ticket
+                    </button>
+                    <p class="text-xs text-gray-400 text-center mt-3">✓ Secure booking • Instant PDF ticket on success</p>
+                </div>
+            </div>
+
+            <!-- Right panel -->
+            <div class="lg:col-span-1">
+                <div class="bg-white/80 backdrop-blur-sm rounded-2xl card-shadow p-5 sticky top-6">
+                    <div class="flex items-center gap-2 border-b border-gray-200 pb-2 mb-3">
+                        <i class="fas fa-info-circle text-orange-500"></i>
+                        <h3 class="font-bold text-gray-800 text-lg">Booking Snapshot</h3>
+                    </div>
+                    <div id="liveSummary" class="text-sm space-y-2 text-gray-700">
+                        <p class="flex justify-between"><span>📍 Location:</span> <span class="font-medium">Goa</span></p>
+                        <p class="flex justify-between"><span>🏨 Hotel:</span> <span class="font-medium">—</span></p>
+                        <p class="flex justify-between"><span>🍽️ Food:</span> <span class="font-medium">—</span></p>
+                        <p class="flex justify-between"><span>🎟️ Tour pack:</span> <span class="font-medium">—</span></p>
+                        <p class="flex justify-between"><span>👥 Travelers × Days:</span> <span class="font-medium">2 × 3</span></p>
+                        <div class="border-t border-dashed border-gray-300 pt-2 mt-1">
+                            <p class="font-bold text-orange-700 flex justify-between"><span>Total:</span> <span id="snapshotTotal">₹0</span></p>
+                        </div>
+                    </div>
+                    <div class="mt-4 bg-amber-50 p-3 rounded-lg text-xs">
+                        <i class="fas fa-shield-alt text-amber-600 mr-1"></i> <span class="font-medium">Why book with us?</span>
+                        <ul class="list-disc list-inside mt-1 text-gray-600 space-y-0.5">
+                            <li>Customized travel packages</li>
+                            <li>Best price guarantee</li>
+                            <li>Instant PDF ticket & support</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div id="toastMsg" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 bg-gray-900 text-white px-5 py-3 rounded-full shadow-lg flex items-center gap-2 z-50 hidden transition-all"></div>
+
+    <!-- Hidden ticket container for html2canvas -->
+    <div id="ticketContainer"></div>
+
+    <script>
+        // ---------- DATA MODELS ----------
+        const hotelsDB = {
+            Goa: [
+                { name: "✨ Calangute Breeze Resort", pricePerDay: 1800 },
+                { name: "🌊 Taj Fort Aguada", pricePerDay: 4200 },
+                { name: "🏝️ Sea Pearl Cottage", pricePerDay: 2550 }
+            ],
+            Manali: [
+                { name: "❄️ Himalayan Woodstay", pricePerDay: 2100 },
+                { name: "🏔️ Snow Crest Grand", pricePerDay: 3600 },
+                { name: "🌲 Riverstone Cottages", pricePerDay: 2300 }
+            ],
+            Jaipur: [
+                { name: "🕌 Royal Heritage Haveli", pricePerDay: 2800 },
+                { name: "🏰 City Palace Inn", pricePerDay: 1900 },
+                { name: "✨ Jaipur Jalsa Hotel", pricePerDay: 1500 }
+            ],
+            Kerala: [
+                { name: "🚣 Houseboat Dreams", pricePerDay: 3200 },
+                { name: "🌴 Spice Garden Resort", pricePerDay: 2450 },
+                { name: "🌿 Backwater Eco Stay", pricePerDay: 1950 }
+            ]
+        };
+
+        const tourPackagesDB = {
+            Goa: { "🏄 Adventure Water Sports": 3500, "🌅 Sunset & Leisure": 2000, "🏛️ Cultural Trail": 1500 },
+            Manali: { "⛷️ Snow Adventure & Trek": 4300, "🌸 Valley of Gods": 2600, "🕉️ Monastery Tour": 1900 },
+            Jaipur: { "🐪 Royal Elephant Safari": 3800, "🏯 Heritage Walk": 2200, "🎨 Block Printing Workshop": 1700 },
+            Kerala: { "🌊 Backwater Cruise Deluxe": 4000, "🌿 Ayurveda & Wellness": 2800, "🏞️ Tea Estate Trek": 2100 }
+        };
+
+        const foodOptions = [
+            { name: "🍳 Breakfast Only", pricePerDay: 420 },
+            { name: "🥗 Half Board (Breakfast + Dinner)", pricePerDay: 950 },
+            { name: "🍱 Full Board (All Meals)", pricePerDay: 1450 }
+        ];
+
+        function formatINR(amount) {
+            return "₹ " + amount.toLocaleString('en-IN');
+        }
+
+        // DOM refs
+        const locationSelect = document.getElementById('locationSelect');
+        const hotelSelect = document.getElementById('hotelSelect');
+        const foodSelect = document.getElementById('foodSelect');
+        const tourSelect = document.getElementById('tourSelect');
+        const travelersInput = document.getElementById('travelers');
+        const daysInput = document.getElementById('daysCount');
+        const travelDateInput = document.getElementById('travelDate');
+        const fullNameInput = document.getElementById('fullName');
+        const emailInput = document.getElementById('email');
+        const phoneInput = document.getElementById('phone');
+        const totalPriceSpan = document.getElementById('totalPriceDisplay');
+        const priceBreakdownSpan = document.getElementById('priceBreakdown');
+        const snapshotTotalSpan = document.getElementById('snapshotTotal');
+        const bookBtn = document.getElementById('bookNowBtn');
+
+        const liveLocationSpan = document.querySelector('#liveSummary span:first-child + span');
+        const liveHotelSpan = document.querySelector('#liveSummary p:nth-child(2) span.font-medium');
+        const liveFoodSpan = document.querySelector('#liveSummary p:nth-child(3) span.font-medium');
+        const liveTourSpan = document.querySelector('#liveSummary p:nth-child(4) span.font-medium');
+        const liveTravelersDaysSpan = document.querySelector('#liveSummary p:nth-child(5) span.font-medium');
+
+        // Populate food
+        function populateFoodDropdown() {
+            foodSelect.innerHTML = '';
+            foodOptions.forEach((food, idx) => {
+                const opt = document.createElement('option');
+                opt.value = idx;
+                opt.textContent = `${food.name} - ${formatINR(food.pricePerDay)} / day / person`;
+                opt.dataset.price = food.pricePerDay;
+                foodSelect.appendChild(opt);
+            });
+        }
+
+        function updateHotelsByLocation(loc) {
+            const hotels = hotelsDB[loc];
+            hotelSelect.innerHTML = '';
+            hotels.forEach((h, idx) => {
+                const opt = document.createElement('option');
+                opt.value = idx;
+                opt.textContent = `${h.name} - ${formatINR(h.pricePerDay)} / night / person`;
+                opt.dataset.price = h.pricePerDay;
+                hotelSelect.appendChild(opt);
+            });
+        }
+
+        function updateToursByLocation(loc) {
+            const pkgs = tourPackagesDB[loc];
+            tourSelect.innerHTML = '';
+            for (const [name, price] of Object.entries(pkgs)) {
+                const opt = document.createElement('option');
+                opt.value = name;
+                opt.textContent = `${name} - ${formatINR(price)} per person`;
+                opt.dataset.price = price;
+                tourSelect.appendChild(opt);
+            }
+        }
+
+        function getSelectedHotelPrice() {
+            const opt = hotelSelect.options[hotelSelect.selectedIndex];
+            return opt && opt.dataset.price ? parseInt(opt.dataset.price) : 2000;
+        }
+
+        function getSelectedFoodPrice() {
+            const idx = foodSelect.value;
+            return foodOptions[idx] ? foodOptions[idx].pricePerDay : 420;
+        }
+
+        function getSelectedTourPrice() {
+            const opt = tourSelect.options[tourSelect.selectedIndex];
+            return opt && opt.dataset.price ? parseInt(opt.dataset.price) : 2000;
+        }
+
+        function computeTotalAndUpdate() {
+            const travelers = parseInt(travelersInput.value) || 1;
+            const days = parseInt(daysInput.value) || 1;
+            const hotelPrice = getSelectedHotelPrice();
+            const foodPrice = getSelectedFoodPrice();
+            const tourPrice = getSelectedTourPrice();
+
+            const hotelTotal = hotelPrice * days * travelers;
+            const foodTotal = foodPrice * days * travelers;
+            const tourTotal = tourPrice * travelers;
+            const grandTotal = hotelTotal + foodTotal + tourTotal;
+
+            totalPriceSpan.innerText = formatINR(grandTotal);
+            snapshotTotalSpan.innerText = formatINR(grandTotal);
+            priceBreakdownSpan.innerHTML = `
+            <span>🏨 Hotel: ${formatINR(hotelTotal)}</span>
+            <span>🍽️ Meals: ${formatINR(foodTotal)}</span>
+            <span>🎟️ Tour: ${formatINR(tourTotal)}</span>
+          `;
+
+            if (liveHotelSpan) {
+                const hName = hotelSelect.options[hotelSelect.selectedIndex]?.text.split('-')[0].trim() || '—';
+                const fName = foodOptions[foodSelect.value]?.name || '—';
+                const tName = tourSelect.options[tourSelect.selectedIndex]?.value || '—';
+                liveHotelSpan.innerText = hName.substring(0, 28);
+                liveFoodSpan.innerText = fName;
+                liveTourSpan.innerText = tName;
+                liveTravelersDaysSpan.innerText = `${travelers} × ${days} day(s)`;
+            }
+            return { grandTotal, hotelTotal, foodTotal, tourTotal, travelers, days, hotelPrice, foodPrice, tourPrice };
+        }
+
+        function onLocationChange() {
+            const loc = locationSelect.value;
+            updateHotelsByLocation(loc);
+            updateToursByLocation(loc);
+            const txt = locationSelect.options[locationSelect.selectedIndex]?.text.split('—')[0] || loc;
+            if (liveLocationSpan) liveLocationSpan.innerText = txt;
+            computeTotalAndUpdate();
+        }
+
+        function bindEvents() {
+            locationSelect.addEventListener('change', () => { onLocationChange();
+                computeTotalAndUpdate(); });
+            hotelSelect.addEventListener('change', () => computeTotalAndUpdate());
+            foodSelect.addEventListener('change', () => computeTotalAndUpdate());
+            tourSelect.addEventListener('change', () => computeTotalAndUpdate());
+            travelersInput.addEventListener('input', () => computeTotalAndUpdate());
+            daysInput.addEventListener('input', () => computeTotalAndUpdate());
+        }
+
+        function showToast(msg, isError = false) {
+            const toast = document.getElementById('toastMsg');
+            toast.innerHTML = `<i class="fas ${isError ? 'fa-exclamation-triangle' : 'fa-check-circle'}"></i> ${msg}`;
+            toast.classList.remove('hidden');
+            toast.classList.add('toast-success');
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+                toast.classList.add('hidden');
+                toast.classList.remove('toast-success');
+            }, 3500);
+        }
+
+        // ---------- PDF GENERATION with html2canvas (CRISP TEXT) ----------
+        async function generateTicketPDF(booking) {
+            const ticketContainer = document.getElementById('ticketContainer');
+
+            // Build ticket HTML
+            ticketContainer.innerHTML = `
+            <div class="crisp" style="font-family:'Inter',sans-serif;background:#fff;width:800px;margin:0;padding:0;">
+              <!-- Header -->
+              <div style="background:linear-gradient(135deg,#ea580c,#f97316);padding:16px 38px 12px 38px;color:#fff;display:flex;justify-content:space-between;align-items:center;">
+                <h1 style="font-size:26px;font-weight:800;letter-spacing:1px;margin:0;">WANDERWISE TRAVELS</h1>
+                <span style="background:rgba(255,255,255,0.18);padding:5px 18px;border-radius:40px;font-size:13px;font-weight:600;border:1px solid rgba(255,255,255,0.25);">CONFIRMATION</span>
+              </div>
+              <!-- Body -->
+              <div style="padding:28px 38px 18px 38px;">
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                  <div style="font-size:22px;font-weight:700;color:#1e293b;display:flex;align-items:center;gap:10px;">
+                    <span style="color:#f97316;">✈️</span> Booking Ticket
+                  </div>
+                  <span style="background:#fff7ed;padding:3px 16px;border-radius:20px;font-size:13px;font-weight:700;color:#f97316;border:1px solid #fed7aa;">${booking.bookingId}</span>
+                </div>
+                <div style="color:#64748b;font-size:14px;margin-bottom:16px;border-bottom:2px solid #f1f5f9;padding-bottom:12px;">
+                  Issued: ${new Date().toLocaleDateString('en-IN', { day:'numeric', month:'short', year:'numeric' })}
+                </div>
+
+                <!-- Customer & Travel Info -->
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:4px 30px;background:#f8fafc;padding:14px 20px;border-radius:12px;margin-bottom:18px;border:1px solid #e2e8f0;">
+                  <div><span style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.4px;">Guest</span><br><span style="font-size:15px;font-weight:600;color:#0f172a;">${booking.customerName}</span></div>
+                  <div><span style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.4px;">Travel Date</span><br><span style="font-size:15px;font-weight:600;color:#0f172a;">${booking.travelDate}</span></div>
+                  <div><span style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.4px;">Email</span><br><span style="font-size:14px;font-weight:500;color:#0f172a;">${booking.email}</span></div>
+                  <div><span style="font-size:11px;font-weight:600;color:#94a3b8;text-transform:uppercase;letter-spacing:0.4px;">Phone</span><br><span style="font-size:14px;font-weight:500;color:#0f172a;">${booking.phone}</span></div>
+                </div>
+
+                <!-- Trip Summary -->
+                <div style="background:#fff7ed;border-radius:12px;padding:14px 20px;margin-bottom:16px;border-left:5px solid #f97316;">
+                  <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dashed #fed7aa;font-size:15px;">
+                    <span style="color:#64748b;font-weight:500;">📍 Destination</span>
+                    <span style="font-weight:600;color:#0f172a;">${booking.location}</span>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dashed #fed7aa;font-size:15px;">
+                    <span style="color:#64748b;font-weight:500;">🏨 Hotel / Resort</span>
+                    <span style="font-weight:600;color:#0f172a;">${booking.hotelName}</span>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dashed #fed7aa;font-size:15px;">
+                    <span style="color:#64748b;font-weight:500;">🍽️ Meal Plan</span>
+                    <span style="font-weight:600;color:#0f172a;">${booking.foodPlan}</span>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px dashed #fed7aa;font-size:15px;">
+                    <span style="color:#64748b;font-weight:500;">🎟️ Tour Package</span>
+                    <span style="font-weight:600;color:#0f172a;">${booking.tourPackage}</span>
+                  </div>
+                  <div style="display:flex;justify-content:space-between;padding:4px 0;font-size:15px;">
+                    <span style="color:#64748b;font-weight:500;">👥 Travelers × Days</span>
+                    <span style="font-weight:600;color:#0f172a;">${booking.travelers} × ${booking.days} day(s)</span>
+                  </div>
+                </div>
+
+                <!-- Price Breakdown -->
+                <div style="background:#f1f5f9;border-radius:10px;padding:12px 20px;margin-bottom:14px;display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 20px;font-size:14px;color:#334155;">
+                  <span><b>🏨 Hotel</b> <span style="font-weight:600;color:#0f172a;">${booking.hotelCost}</span></span>
+                  <span><b>🍽️ Meals</b> <span style="font-weight:600;color:#0f172a;">${booking.foodCost}</span></span>
+                  <span><b>🎟️ Tour</b> <span style="font-weight:600;color:#0f172a;">${booking.tourCost}</span></span>
+                  <span style="font-weight:700;color:#ea580c;font-size:16px;">Total: ${booking.totalCost}</span>
+                </div>
+
+                <!-- Footer note -->
+                <div style="background:#f8fafc;border-radius:8px;padding:10px 16px;border:1px solid #e2e8f0;text-align:center;font-size:13px;color:#475569;">
+                  <span style="font-weight:600;color:#0f172a;">✓</span> Show this ticket at check-in. 
+                  <span style="color:#94a3b8;">|</span> For assistance: <span style="font-weight:500;color:#f97316;">support@wanderwise.com</span> 
+                  <span style="color:#94a3b8;">|</span> <span style="font-weight:500;">+91 98765 43210</span>
+                </div>
+              </div>
+              <!-- Footer bar -->
+              <div style="background:#f1f5f9;padding:10px 38px;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#475569;border-top:1px solid #e2e8f0;">
+                <span style="font-weight:600;color:#0f172a;">✨ WanderWise Escapes</span>
+                <span>© ${new Date().getFullYear()} · Premium Travel</span>
+              </div>
+              <!-- watermark -->
+              <div style="position:absolute;right:28px;bottom:60px;font-size:72px;font-weight:800;color:rgba(249,115,22,0.05);transform:rotate(-14deg);pointer-events:none;letter-spacing:5px;user-select:none;">WANDER</div>
+            </div>
+          `;
+
+            // Use html2canvas with high DPI for crisp text
+            try {
+                const canvas = await html2canvas(ticketContainer, {
+                    scale: 2.5, // high DPI → crisp letters
+                    useCORS: true,
+                    backgroundColor: '#ffffff',
+                    logging: false,
+                    width: 800,
+                    height: ticketContainer.scrollHeight,
+                    onclone: (doc) => {
+                        // ensure fonts are loaded
+                    }
+                });
+
+                const imgData = canvas.toDataURL('image/jpeg', 0.96);
+
+                const { jsPDF } = window.jspdf;
+                const doc = new jsPDF({
+                    orientation: 'portrait',
+                    unit: 'mm',
+                    format: 'a4',
+                    compress: true
+                });
+
+                const pdfWidth = 210;
+                const pdfHeight = 297;
+                const imgAspect = canvas.width / canvas.height;
+                let imgW = pdfWidth - 10;
+                let imgH = imgW / imgAspect;
+                if (imgH > pdfHeight - 10) {
+                    imgH = pdfHeight - 10;
+                    imgW = imgH * imgAspect;
+                }
+                const xOff = (pdfWidth - imgW) / 2;
+                const yOff = (pdfHeight - imgH) / 2;
+
+                doc.addImage(imgData, 'JPEG', xOff, yOff, imgW, imgH);
+                doc.save(`WanderWise_Ticket_${booking.bookingId}.pdf`);
+                return true;
+            } catch (err) {
+                console.error('html2canvas error:', err);
+                // fallback: simple text PDF
+                try {
+                    const { jsPDF } = window.jspdf;
+                    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+                    doc.setFontSize(16);
+                    doc.text('WANDERWISE TRAVELS', 105, 25, { align: 'center' });
+                    doc.setFontSize(12);
+                    doc.text(`Booking ID: ${booking.bookingId}`, 20, 45);
+                    doc.text(`Guest: ${booking.customerName}`, 20, 55);
+                    doc.text(`Email: ${booking.email}`, 20, 65);
+                    doc.text(`Phone: ${booking.phone}`, 20, 75);
+                    doc.text(`Travel Date: ${booking.travelDate}`, 20, 85);
+                    doc.text(`Destination: ${booking.location}`, 20, 100);
+                    doc.text(`Hotel: ${booking.hotelName}`, 20, 110);
+                    doc.text(`Meal Plan: ${booking.foodPlan}`, 20, 120);
+                    doc.text(`Tour: ${booking.tourPackage}`, 20, 130);
+                    doc.text(`Travelers: ${booking.travelers}  |  Days: ${booking.days}`, 20, 145);
+                    doc.text(`Total: ${booking.totalCost}`, 20, 160);
+                    doc.save(`WanderWise_Ticket_${booking.bookingId}.pdf`);
+                    return true;
+                } catch (e2) {
+                    console.error('Fallback PDF error:', e2);
+                    return false;
+                }
+            }
+        }
+
+        // ---------- Booking Handler ----------
+        function handleBooking() {
+            const fullName = fullNameInput.value.trim();
+            const email = emailInput.value.trim();
+            const phone = phoneInput.value.trim();
+            const travelDate = travelDateInput.value;
+
+            if (!fullName || !email || !phone || !travelDate) {
+                showToast("❌ Please fill all traveler details (Name, Email, Phone, Date)", true);
+                return;
+            }
+            if (!email.includes('@') || !email.includes('.')) {
+                showToast("⚠️ Enter a valid email address", true);
+                return;
+            }
+            if (phone.length < 8) {
+                showToast("📞 Phone number must be at least 8 digits", true);
+                return;
+            }
+            const selectedDate = new Date(travelDate);
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            if (selectedDate < today) {
+                showToast("📅 Travel date cannot be in the past", true);
+                return;
+            }
+
+            const totals = computeTotalAndUpdate();
+            const { grandTotal, hotelTotal, foodTotal, tourTotal, travelers, days } = totals;
+            const { hotelName, foodName, tourName, locationName } = getCurrentSelectionNames();
+            const bookingId = 'WT' + Math.floor(Math.random() * 1000000) + '-' + Date.now().toString().slice(-6);
+
+            const payload = {
+                bookingId,
+                customerName: fullName,
+                email,
+                phone,
+                travelDate,
+                location: locationName,
+                hotelName,
+                foodPlan: foodName,
+                tourPackage: tourName,
+                travelers,
+                days,
+                totalCost: formatINR(grandTotal),
+                hotelCost: formatINR(hotelTotal),
+                foodCost: formatINR(foodTotal),
+                tourCost: formatINR(tourTotal),
+                rawTotal: grandTotal
+            };
+
+            showToast(`🎉 Booking confirmed! Generating ticket ${bookingId}…`, false);
+
+            // Generate PDF with crisp text via html2canvas
+            generateTicketPDF(payload).then(ok => {
+                if (!ok) {
+                    showToast("⚠️ PDF generation had issues, but booking is confirmed. Please screenshot summary.", true);
+                }
+            }).catch(() => {
+                showToast("⚠️ PDF generation error, but booking confirmed.", true);
+            });
+        }
+
+        function getCurrentSelectionNames() {
+            const hotelName = hotelSelect.options[hotelSelect.selectedIndex]?.text.split('-')[0].trim() || "Standard Hotel";
+            const foodIdx = foodSelect.value;
+            const foodName = foodOptions[foodIdx]?.name || "Breakfast";
+            const tourName = tourSelect.options[tourSelect.selectedIndex]?.value || "Classic Tour";
+            const locationName = locationSelect.options[locationSelect.selectedIndex]?.text.split('—')[0].trim() || locationSelect
+                .value;
+            return { hotelName, foodName, tourName, locationName };
+        }
+
+        // ---------- Init ----------
+        function init() {
+            const todayStr = new Date().toISOString().split('T')[0];
+            travelDateInput.min = todayStr;
+            travelDateInput.value = todayStr;
+
+            populateFoodDropdown();
+            updateHotelsByLocation('Goa');
+            updateToursByLocation('Goa');
+            if (liveLocationSpan) liveLocationSpan.innerText = "Goa";
+            bindEvents();
+            computeTotalAndUpdate();
+
+            const { hotelName, foodName, tourName } = getCurrentSelectionNames();
+            if (liveHotelSpan) liveHotelSpan.innerText = hotelName;
+            if (liveFoodSpan) liveFoodSpan.innerText = foodName;
+            if (liveTourSpan) liveTourSpan.innerText = tourName;
+            const travelers = parseInt(travelersInput.value) || 2;
+            const days = parseInt(daysInput.value) || 3;
+            if (liveTravelersDaysSpan) liveTravelersDaysSpan.innerText = `${travelers} × ${days} day(s)`;
+
+            bookBtn.addEventListener('click', (e) => {
+                e.preventDefault();
+                handleBooking();
+            });
+        }
+
+        init();
+    </script>
+
+</body>
+
+</html>

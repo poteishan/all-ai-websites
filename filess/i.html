@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>I</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #2563eb;
+            --secondary: #f59e0b;
+            --dark: #1e293b;
+            --light: #f8fafc;
+            --success: #10b981;
+            --danger: #ef4444;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--light);
+            color: var(--dark);
+            line-height: 1.6;
+        }
+        .container { max-width: 1200px; margin: 0 auto; padding: 0 20px; }
+        
+        /* Header */
+        header {
+            background: linear-gradient(135deg, var(--primary), #1d4ed8);
+            color: white;
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+        }
+        nav { display: flex; justify-content: space-between; align-items: center; }
+        .logo { font-size: 1.5rem; font-weight: bold; display: flex; align-items: center; gap: 0.5rem; }
+        .nav-links { display: flex; gap: 2rem; list-style: none; }
+        .nav-links a { color: white; text-decoration: none; font-weight: 500; transition: opacity 0.3s; }
+        .nav-links a:hover { opacity: 0.8; }
+        .cart-icon { position: relative; cursor: pointer; font-size: 1.2rem; }
+        .cart-count {
+            position: absolute; top: -8px; right: -8px;
+            background: var(--secondary); color: white;
+            border-radius: 50%; width: 20px; height: 20px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.75rem; font-weight: bold;
+        }
+
+        /* Hero */
+        .hero {
+            background: linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url('https://images.unsplash.com/photo-1469854523086-cc02fe5d8800?w=1200') center/cover;
+            height: 500px;
+            display: flex; align-items: center; justify-content: center;
+            text-align: center; color: white;
+        }
+        .hero h1 { font-size: 3rem; margin-bottom: 1rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.5); }
+        .hero p { font-size: 1.25rem; margin-bottom: 2rem; }
+        .search-box {
+            background: white; padding: 1.5rem; border-radius: 12px;
+            display: flex; gap: 1rem; max-width: 800px; margin: 0 auto;
+            box-shadow: 0 10px 25px -5px rgba(0,0,0,0.1);
+        }
+        .search-box select, .search-box input {
+            flex: 1; padding: 0.75rem; border: 2px solid #e2e8f0;
+            border-radius: 8px; font-size: 1rem; outline: none;
+        }
+        .search-box button {
+            background: var(--secondary); color: white; border: none;
+            padding: 0.75rem 2rem; border-radius: 8px;
+            font-weight: bold; cursor: pointer; transition: transform 0.2s;
+        }
+        .search-box button:hover { transform: translateY(-2px); }
+
+        /* Sections */
+        .section { padding: 4rem 0; display: none; }
+        .section.active { display: block; }
+        .section-title {
+            text-align: center; font-size: 2rem; margin-bottom: 0.5rem;
+            color: var(--dark);
+        }
+        .section-subtitle {
+            text-align: center; color: #64748b; margin-bottom: 3rem;
+        }
+
+        /* Cards */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        .card {
+            background: white; border-radius: 16px; overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .card:hover { transform: translateY(-5px); box-shadow: 0 20px 25px -5px rgba(0,0,0,0.1); }
+        .card-img {
+            height: 200px; background: #e2e8f0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 3rem; color: #94a3b8;
+            position: relative;
+        }
+        .card-badge {
+            position: absolute; top: 1rem; right: 1rem;
+            background: var(--success); color: white;
+            padding: 0.25rem 0.75rem; border-radius: 20px;
+            font-size: 0.875rem; font-weight: bold;
+        }
+        .card-body { padding: 1.5rem; }
+        .card-title { font-size: 1.25rem; margin-bottom: 0.5rem; }
+        .card-meta {
+            display: flex; align-items: center; gap: 0.5rem;
+            color: #64748b; font-size: 0.875rem; margin-bottom: 1rem;
+        }
+        .card-price {
+            font-size: 1.5rem; font-weight: bold; color: var(--primary);
+            margin-bottom: 1rem;
+        }
+        .card-price span { font-size: 0.875rem; color: #64748b; font-weight: normal; }
+        .btn {
+            width: 100%; padding: 0.75rem; border: none; border-radius: 8px;
+            font-weight: bold; cursor: pointer; transition: all 0.3s;
+            display: flex; align-items: center; justify-content: center; gap: 0.5rem;
+        }
+        .btn-primary { background: var(--primary); color: white; }
+        .btn-primary:hover { background: #1d4ed8; }
+        .btn-success { background: var(--success); color: white; }
+        .btn-success:hover { background: #059669; }
+        .btn-secondary { background: var(--secondary); color: white; }
+        .btn-secondary:hover { background: #d97706; }
+
+        /* Booking Summary */
+        .booking-panel {
+            position: fixed; right: -400px; top: 0; width: 400px; height: 100vh;
+            background: white; box-shadow: -4px 0 15px rgba(0,0,0,0.1);
+            transition: right 0.3s; z-index: 2000; padding: 2rem;
+            overflow-y: auto;
+        }
+        .booking-panel.open { right: 0; }
+        .overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.5);
+            display: none; z-index: 1500;
+        }
+        .overlay.active { display: block; }
+        .booking-item {
+            border-bottom: 1px solid #e2e8f0; padding: 1rem 0;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .booking-item-info h4 { margin-bottom: 0.25rem; }
+        .booking-item-info p { font-size: 0.875rem; color: #64748b; }
+        .remove-btn {
+            background: var(--danger); color: white; border: none;
+            width: 30px; height: 30px; border-radius: 50%;
+            cursor: pointer; display: flex; align-items: center; justify-content: center;
+        }
+        .total-row {
+            display: flex; justify-content: space-between; font-size: 1.25rem;
+            font-weight: bold; margin: 1.5rem 0; padding-top: 1rem;
+            border-top: 2px solid var(--dark);
+        }
+
+        /* Checkout Modal */
+        .modal {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.6);
+            display: none; align-items: center; justify-content: center;
+            z-index: 3000;
+        }
+        .modal.active { display: flex; }
+        .modal-content {
+            background: white; padding: 2rem; border-radius: 16px;
+            max-width: 500px; width: 90%; max-height: 90vh; overflow-y: auto;
+        }
+        .form-group { margin-bottom: 1rem; }
+        .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 500; }
+        .form-group input, .form-group select {
+            width: 100%; padding: 0.75rem; border: 2px solid #e2e8f0;
+            border-radius: 8px; font-size: 1rem; outline: none;
+        }
+        .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+
+        /* Ticket */
+        .ticket {
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            border: 2px dashed var(--primary); border-radius: 12px;
+            padding: 2rem; margin: 2rem 0; text-align: center;
+        }
+        .ticket h2 { color: var(--primary); margin-bottom: 1rem; }
+        .ticket-details { text-align: left; margin: 1.5rem 0; }
+        .ticket-row { display: flex; justify-content: space-between; padding: 0.5rem 0; border-bottom: 1px dotted #cbd5e1; }
+        .success-message {
+            background: #ecfdf5; color: var(--success); padding: 1rem;
+            border-radius: 8px; margin-bottom: 1rem; text-align: center;
+            font-weight: bold;
+        }
+
+        /* Stars */
+        .stars { color: var(--secondary); margin-bottom: 0.5rem; }
+
+        /* Footer */
+        footer {
+            background: var(--dark); color: white; text-align: center;
+            padding: 2rem 0; margin-top: 4rem;
+        }
+
+        /* Animations */
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .fade-in { animation: fadeIn 0.5s ease-out; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 { font-size: 2rem; }
+            .search-box { flex-direction: column; }
+            .nav-links { display: none; }
+            .booking-panel { width: 100%; right: -100%; }
+            .grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <nav class="container">
+            <div class="logo"><i class="fas fa-plane-departure"></i> Wanderlust Travels</div>
+            <ul class="nav-links">
+                <li><a href="#" onclick="showSection('home')">Home</a></li>
+                <li><a href="#" onclick="showSection('hotels')">Hotels</a></li>
+                <li><a href="#" onclick="showSection('food')">Food</a></li>
+                <li><a href="#" onclick="showSection('tours')">Tours</a></li>
+            </ul>
+            <div class="cart-icon" onclick="toggleBookingPanel()">
+                <i class="fas fa-ticket-alt"></i>
+                <span class="cart-count" id="cartCount">0</span>
+            </div>
+        </nav>
+    </header>
+
+    <!-- Home / Hero -->
+    <section id="home" class="section active">
+        <div class="hero">
+            <div>
+                <h1>Explore the World with Us</h1>
+                <p>Book hotels, discover local cuisine, and experience unforgettable tours</p>
+                <div class="search-box container">
+                    <select id="locationSelect" onchange="filterByLocation()">
+                        <option value="">Select Destination</option>
+                        <option value="paris">Paris, France</option>
+                        <option value="tokyo">Tokyo, Japan</option>
+                        <option value="dubai">Dubai, UAE</option>
+                        <option value="bali">Bali, Indonesia</option>
+                        <option value="newyork">New York, USA</option>
+                        <option value="london">London, UK</option>
+                    </select>
+                    <input type="date" id="checkIn" placeholder="Check In">
+                    <input type="date" id="checkOut" placeholder="Check Out">
+                    <button onclick="searchAll()"><i class="fas fa-search"></i> Explore</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="container" style="padding: 4rem 0;">
+            <h2 class="section-title">Popular Destinations</h2>
+            <p class="section-subtitle">Choose your next adventure</p>
+            <div class="grid" id="destinationsGrid">
+                <!-- Filled by JS -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Hotels -->
+    <section id="hotels" class="section">
+        <div class="container" style="padding-top: 2rem;">
+            <h2 class="section-title">Hotels & Accommodations</h2>
+            <p class="section-subtitle">Find the perfect stay for your journey</p>
+            <div class="grid" id="hotelsGrid"></div>
+        </div>
+    </section>
+
+    <!-- Food -->
+    <section id="food" class="section">
+        <div class="container" style="padding-top: 2rem;">
+            <h2 class="section-title">Local Cuisine & Restaurants</h2>
+            <p class="section-subtitle">Taste the flavors of your destination</p>
+            <div class="grid" id="foodGrid"></div>
+        </div>
+    </section>
+
+    <!-- Tours -->
+    <section id="tours" class="section">
+        <div class="container" style="padding-top: 2rem;">
+            <h2 class="section-title">Tour Packages</h2>
+            <p class="section-subtitle">Curated experiences for every traveler</p>
+            <div class="grid" id="toursGrid"></div>
+        </div>
+    </section>
+
+    <!-- Booking Panel -->
+    <div class="overlay" id="overlay" onclick="toggleBookingPanel()"></div>
+    <div class="booking-panel" id="bookingPanel">
+        <h2 style="margin-bottom: 1.5rem;"><i class="fas fa-shopping-cart"></i> Your Bookings</h2>
+        <div id="bookingItems"></div>
+        <div class="total-row">
+            <span>Total:</span>
+            <span id="totalPrice">$0</span>
+        </div>
+        <button class="btn btn-success" onclick="openCheckout()">
+            <i class="fas fa-credit-card"></i> Proceed to Checkout
+        </button>
+        <button class="btn btn-secondary" onclick="toggleBookingPanel()" style="margin-top: 0.5rem; background: #64748b;">
+            Continue Shopping
+        </button>
+    </div>
+
+    <!-- Checkout Modal -->
+    <div class="modal" id="checkoutModal">
+        <div class="modal-content">
+            <h2 style="margin-bottom: 1.5rem;">Complete Your Booking</h2>
+            <form id="checkoutForm" onsubmit="processBooking(event)">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>First Name</label>
+                        <input type="text" required placeholder="John">
+                    </div>
+                    <div class="form-group">
+                        <label>Last Name</label>
+                        <input type="text" required placeholder="Doe">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" required placeholder="john@example.com">
+                </div>
+                <div class="form-group">
+                    <label>Phone</label>
+                    <input type="tel" required placeholder="+1 234 567 890">
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Travel Date</label>
+                        <input type="date" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Guests</label>
+                        <input type="number" min="1" value="2" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Payment Method</label>
+                    <select required>
+                        <option value="card">Credit/Debit Card</option>
+                        <option value="paypal">PayPal</option>
+                        <option value="bank">Bank Transfer</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Card Number</label>
+                    <input type="text" placeholder="**** **** **** ****" required>
+                </div>
+                <div class="form-row">
+                    <div class="form-group">
+                        <label>Expiry</label>
+                        <input type="text" placeholder="MM/YY" required>
+                    </div>
+                    <div class="form-group">
+                        <label>CVV</label>
+                        <input type="text" placeholder="***" required>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-success" style="margin-top: 1rem;">
+                    <i class="fas fa-lock"></i> Pay & Confirm Booking
+                </button>
+                <button type="button" class="btn btn-secondary" onclick="closeCheckout()" style="margin-top: 0.5rem; background: #64748b;">
+                    Cancel
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Ticket Modal -->
+    <div class="modal" id="ticketModal">
+        <div class="modal-content" style="max-width: 600px;">
+            <div id="ticketContent"></div>
+            <button class="btn btn-primary" onclick="downloadPDF()" style="margin-top: 1rem;">
+                <i class="fas fa-download"></i> Download PDF Ticket
+            </button>
+            <button class="btn btn-secondary" onclick="closeTicket()" style="margin-top: 0.5rem; background: #64748b;">
+                Close
+            </button>
+        </div>
+    </div>
+
+    <footer>
+        <div class="container">
+            <p><i class="fas fa-heart"></i> Wanderlust Travels &copy; 2026. Your journey begins here.</p>
+        </div>
+    </footer>
+
+    <script>
+        // Data
+        const destinations = [
+            { id: 'paris', name: 'Paris', country: 'France', img: 'fa-landmark', desc: 'City of lights and love' },
+            { id: 'tokyo', name: 'Tokyo', country: 'Japan', img: 'fa-torii-gate', desc: 'Where tradition meets future' },
+            { id: 'dubai', name: 'Dubai', country: 'UAE', img: 'fa-building', desc: 'Luxury in the desert' },
+            { id: 'bali', name: 'Bali', country: 'Indonesia', img: 'fa-umbrella-beach', desc: 'Tropical paradise' },
+            { id: 'newyork', name: 'New York', country: 'USA', img: 'fa-city', desc: 'The city that never sleeps' },
+            { id: 'london', name: 'London', country: 'UK', img: 'fa-crown', desc: 'Royal history and modern vibe' }
+        ];
+
+        const hotels = [
+            { id: 'h1', name: 'Grand Palace Hotel', location: 'paris', price: 250, rating: 5, nights: 1, type: 'hotel', icon: 'fa-hotel' },
+            { id: 'h2', name: 'Seaside Resort', location: 'bali', price: 180, rating: 4, nights: 1, type: 'hotel', icon: 'fa-umbrella-beach' },
+            { id: 'h3', name: 'Skyline Tower', location: 'dubai', price: 320, rating: 5, nights: 1, type: 'hotel', icon: 'fa-building' },
+            { id: 'h4', name: 'Sakura Inn', location: 'tokyo', price: 150, rating: 4, nights: 1, type: 'hotel', icon: 'fa-bed' },
+            { id: 'h5', name: 'Central Park Suites', location: 'newyork', price: 280, rating: 4, nights: 1, type: 'hotel', icon: 'fa-city' },
+            { id: 'h6', name: 'Thames View Hotel', location: 'london', price: 220, rating: 5, nights: 1, type: 'hotel', icon: 'fa-landmark' }
+        ];
+
+        const foods = [
+            { id: 'f1', name: 'Le Gourmet Experience', location: 'paris', price: 85, cuisine: 'French', meals: 1, type: 'food', icon: 'fa-wine-glass' },
+            { id: 'f2', name: 'Sushi Masterclass Dinner', location: 'tokyo', price: 120, cuisine: 'Japanese', meals: 1, type: 'food', icon: 'fa-fish' },
+            { id: 'f3', name: 'Desert Safari BBQ', location: 'dubai', price: 95, cuisine: 'Arabic', meals: 1, type: 'food', icon: 'fa-fire' },
+            { id: 'f4', name: 'Bali Floating Brunch', location: 'bali', price: 60, cuisine: 'Indonesian', meals: 1, type: 'food', icon: 'fa-coffee' },
+            { id: 'f5', name: 'NY Pizza & Food Tour', location: 'newyork', price: 75, cuisine: 'American', meals: 1, type: 'food', icon: 'fa-pizza-slice' },
+            { id: 'f6', name: 'British Afternoon Tea', location: 'london', price: 55, cuisine: 'British', meals: 1, type: 'food', icon: 'fa-mug-hot' }
+        ];
+
+        const tours = [
+            { id: 't1', name: 'Eiffel Tower & Louvre Tour', location: 'paris', price: 150, duration: '1 Day', type: 'tour', icon: 'fa-monument' },
+            { id: 't2', name: 'Mt. Fuji Day Trip', location: 'tokyo', price: 200, duration: '1 Day', type: 'tour', icon: 'fa-mountain' },
+            { id: 't3', name: 'Desert Safari Adventure', location: 'dubai', price: 180, duration: '1 Day', type: 'tour', icon: 'fa-hiking' },
+            { id: 't4', name: 'Ubud Rice Terrace Walk', location: 'bali', price: 90, duration: 'Half Day', type: 'tour', icon: 'fa-walking' },
+            { id: 't5', name: 'Broadway & Manhattan Tour', location: 'newyork', price: 160, duration: '1 Day', type: 'tour', icon: 'fa-theater-masks' },
+            { id: 't6', name: 'Harry Potter Studio Tour', location: 'london', price: 140, duration: '1 Day', type: 'tour', icon: 'fa-hat-wizard' }
+        ];
+
+        let cart = [];
+        let currentLocation = '';
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            renderDestinations();
+            renderHotels();
+            renderFood();
+            renderTours();
+            updateCart();
+        });
+
+        function renderDestinations() {
+            const grid = document.getElementById('destinationsGrid');
+            grid.innerHTML = destinations.map(d => `
+                <div class="card fade-in" onclick="selectLocation('${d.id}')" style="cursor: pointer;">
+                    <div class="card-img"><i class="fas ${d.img}"></i></div>
+                    <div class="card-body">
+                        <h3 class="card-title">${d.name}, ${d.country}</h3>
+                        <p style="color: #64748b;">${d.desc}</p>
+                        <button class="btn btn-primary" style="margin-top: 1rem;">Explore <i class="fas fa-arrow-right"></i></button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderHotels(filter = '') {
+            const grid = document.getElementById('hotelsGrid');
+            const items = filter ? hotels.filter(h => h.location === filter) : hotels;
+            grid.innerHTML = items.map(h => `
+                <div class="card fade-in">
+                    <div class="card-img"><i class="fas ${h.icon}"></i><span class="card-badge">${h.rating} <i class="fas fa-star"></i></span></div>
+                    <div class="card-body">
+                        <h3 class="card-title">${h.name}</h3>
+                        <div class="card-meta"><i class="fas fa-map-marker-alt"></i> ${destinations.find(d => d.id === h.location)?.name || h.location}</div>
+                        <div class="stars">${'<i class="fas fa-star"></i>'.repeat(h.rating)}</div>
+                        <div class="card-price">$${h.price}<span> / night</span></div>
+                        <button class="btn btn-primary" onclick="addToCart('${h.id}', 'hotel')">
+                            <i class="fas fa-plus"></i> Add to Booking
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderFood(filter = '') {
+            const grid = document.getElementById('foodGrid');
+            const items = filter ? foods.filter(f => f.location === filter) : foods;
+            grid.innerHTML = items.map(f => `
+                <div class="card fade-in">
+                    <div class="card-img"><i class="fas ${f.icon}"></i><span class="card-badge">${f.cuisine}</span></div>
+                    <div class="card-body">
+                        <h3 class="card-title">${f.name}</h3>
+                        <div class="card-meta"><i class="fas fa-map-marker-alt"></i> ${destinations.find(d => d.id === f.location)?.name || f.location}</div>
+                        <div class="card-price">$${f.price}<span> / person</span></div>
+                        <button class="btn btn-primary" onclick="addToCart('${f.id}', 'food')">
+                            <i class="fas fa-plus"></i> Add to Booking
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderTours(filter = '') {
+            const grid = document.getElementById('toursGrid');
+            const items = filter ? tours.filter(t => t.location === filter) : tours;
+            grid.innerHTML = items.map(t => `
+                <div class="card fade-in">
+                    <div class="card-img"><i class="fas ${t.icon}"></i><span class="card-badge">${t.duration}</span></div>
+                    <div class="card-body">
+                        <h3 class="card-title">${t.name}</h3>
+                        <div class="card-meta"><i class="fas fa-map-marker-alt"></i> ${destinations.find(d => d.id === t.location)?.name || t.location}</div>
+                        <div class="card-price">$${t.price}<span> / person</span></div>
+                        <button class="btn btn-primary" onclick="addToCart('${t.id}', 'tour')">
+                            <i class="fas fa-plus"></i> Add to Booking
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function selectLocation(loc) {
+            currentLocation = loc;
+            document.getElementById('locationSelect').value = loc;
+            filterByLocation();
+            showSection('hotels');
+        }
+
+        function filterByLocation() {
+            const loc = document.getElementById('locationSelect').value;
+            currentLocation = loc;
+            renderHotels(loc);
+            renderFood(loc);
+            renderTours(loc);
+        }
+
+        function searchAll() {
+            const loc = document.getElementById('locationSelect').value;
+            if (!loc) { alert('Please select a destination first!'); return; }
+            showSection('hotels');
+        }
+
+        function showSection(id) {
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+            window.scrollTo(0, 0);
+        }
+
+        function addToCart(id, type) {
+            let item;
+            if (type === 'hotel') item = hotels.find(h => h.id === id);
+            else if (type === 'food') item = foods.find(f => f.id === id);
+            else item = tours.find(t => t.id === id);
+            
+            if (item) {
+                cart.push({ ...item, cartId: Date.now() + Math.random() });
+                updateCart();
+                toggleBookingPanel();
+            }
+        }
+
+        function removeFromCart(cartId) {
+            cart = cart.filter(item => item.cartId !== cartId);
+            updateCart();
+        }
+
+        function updateCart() {
+            document.getElementById('cartCount').textContent = cart.length;
+            const container = document.getElementById('bookingItems');
+            if (cart.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #64748b; padding: 2rem 0;">Your booking cart is empty</p>';
+                document.getElementById('totalPrice').textContent = '$0';
+                return;
+            }
+            
+            let total = 0;
+            container.innerHTML = cart.map(item => {
+                total += item.price;
+                const locName = destinations.find(d => d.id === item.location)?.name || item.location;
+                return `
+                    <div class="booking-item">
+                        <div class="booking-item-info">
+                            <h4>${item.name}</h4>
+                            <p>${locName} • $${item.price}</p>
+                        </div>
+                        <button class="remove-btn" onclick="removeFromCart(${item.cartId})">
+                            <i class="fas fa-times"></i>
+                        </button>
+                    </div>
+                `;
+            }).join('');
+            
+            document.getElementById('totalPrice').textContent = '$' + total;
+        }
+
+        function toggleBookingPanel() {
+            document.getElementById('bookingPanel').classList.toggle('open');
+            document.getElementById('overlay').classList.toggle('active');
+        }
+
+        function openCheckout() {
+            if (cart.length === 0) { alert('Your cart is empty!'); return; }
+            document.getElementById('checkoutModal').classList.add('active');
+            toggleBookingPanel();
+        }
+
+        function closeCheckout() {
+            document.getElementById('checkoutModal').classList.remove('active');
+        }
+
+        function processBooking(e) {
+            e.preventDefault();
+            closeCheckout();
+            
+            const bookingRef = 'WL-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+            const date = new Date().toLocaleDateString();
+            const total = cart.reduce((sum, item) => sum + item.price, 0);
+            
+            let ticketHTML = `
+                <div class="success-message">
+                    <i class="fas fa-check-circle"></i> Booking Confirmed Successfully!
+                </div>
+                <div class="ticket" id="pdfTicket">
+                    <h2><i class="fas fa-plane"></i> WANDERLUST TRAVELS</h2>
+                    <div style="font-size: 1.25rem; color: var(--primary); font-weight: bold; margin-bottom: 1rem;">
+                        BOOKING REF: ${bookingRef}
+                    </div>
+                    <div class="ticket-details">
+                        <div class="ticket-row"><span>Booking Date</span><span>${date}</span></div>
+                        <div class="ticket-row"><span>Customer</span><span>Valued Guest</span></div>
+                        <div class="ticket-row"><span>Total Items</span><span>${cart.length}</span></div>
+                        <div class="ticket-row"><span>Amount Paid</span><span style="font-weight: bold; color: var(--primary);">$${total}</span></div>
+                    </div>
+                    <h3 style="margin: 1.5rem 0 1rem; color: var(--dark);">Booked Services</h3>
+                    ${cart.map(item => {
+                        const loc = destinations.find(d => d.id === item.location)?.name || item.location;
+                        return `<div style="background: white; padding: 1rem; border-radius: 8px; margin-bottom: 0.5rem; text-align: left; border-left: 4px solid var(--primary);">
+                            <strong>${item.name}</strong><br>
+                            <small style="color: #64748b;">${loc} • $${item.price}</small>
+                        </div>`;
+                    }).join('')}
+                    <div style="margin-top: 2rem; padding-top: 1rem; border-top: 2px dashed var(--primary);">
+                        <p style="font-size: 0.875rem; color: #64748b;">
+                            <i class="fas fa-info-circle"></i> Please present this ticket at check-in. Have a wonderful trip!
+                        </p>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('ticketContent').innerHTML = ticketHTML;
+            document.getElementById('ticketModal').classList.add('active');
+        }
+
+        function closeTicket() {
+            document.getElementById('ticketModal').classList.remove('active');
+            cart = [];
+            updateCart();
+        }
+
+        function downloadPDF() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            const total = cart.reduce((sum, item) => sum + item.price, 0);
+            const bookingRef = 'WL-' + Math.random().toString(36).substr(2, 9).toUpperCase();
+            
+            // Header
+            doc.setFillColor(37, 99, 235);
+            doc.rect(0, 0, 210, 40, 'F');
+            doc.setTextColor(255, 255, 255);
+            doc.setFontSize(22);
+            doc.text('WANDERLUST TRAVELS', 105, 20, { align: 'center' });
+            doc.setFontSize(12);
+            doc.text('Official Booking Ticket', 105, 30, { align: 'center' });
+            
+            // Body
+            doc.setTextColor(30, 41, 59);
+            doc.setFontSize(14);
+            doc.text('Booking Reference: ' + bookingRef, 20, 55);
+            doc.text('Date: ' + new Date().toLocaleDateString(), 20, 65);
+            doc.text('Total Amount: $' + total, 20, 75);
+            
+            // Items
+            doc.setFontSize(12);
+            let y = 90;
+            doc.setFillColor(248, 250, 252);
+            doc.rect(15, y - 5, 180, 10, 'F');
+            doc.text('Service', 20, y);
+            doc.text('Location', 100, y);
+            doc.text('Price', 170, y);
+            y += 15;
+            
+            cart.forEach(item => {
+                const loc = destinations.find(d => d.id === item.location)?.name || item.location;
+                doc.text(item.name, 20, y);
+                doc.text(loc, 100, y);
+                doc.text('$' + item.price, 170, y);
+                y += 10;
+            });
+            
+            // Footer
+            doc.setDrawColor(37, 99, 235);
+            doc.setLineWidth(0.5);
+            doc.line(20, y + 5, 190, y + 5);
+            doc.setFontSize(10);
+            doc.setTextColor(100, 116, 139);
+            doc.text('Thank you for booking with Wanderlust Travels. Have a wonderful journey!', 105, y + 15, { align: 'center' });
+            doc.text('This is an official receipt. Please keep for your records.', 105, y + 22, { align: 'center' });
+            
+            doc.save('Wanderlust_Ticket_' + bookingRef + '.pdf');
+        }
+    </script>
+</body>
+</html>
